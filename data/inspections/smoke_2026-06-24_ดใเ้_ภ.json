@@ -1,0 +1,25 @@
+{
+  "date": "2026-06-24",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-24",
+      "building": "ดใเ้",
+      "floor": "ภ",
+      "inspector": "",
+      "model": "",
+      "serial": "",
+      "mfg": ""
+    },
+    "devices": [
+      {
+        "location": "",
+        "remarks": "",
+        "zone": "",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
