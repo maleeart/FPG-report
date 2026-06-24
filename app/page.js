@@ -18,7 +18,7 @@ function HomePageInner() {
   const [justSaved, setJustSaved] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [comingSoon, setComingSoon] = useState(null); // 'emergency' | 'smoke'
+  const [comingSoon, setComingSoon] = useState(null); // unused — kept for future
   const today = new Date().toISOString().slice(0, 10);
   const SESSION_KEY = `session:${today}`;
 
@@ -39,19 +39,21 @@ function HomePageInner() {
   }, []);
 
   // ── handler เดิม ─────────────────────────────────────────────────────────
-  const handleDownload = async (date, type = 'fpg', records = null) => {
+  const handleDownload = async (date, type = 'fpg') => {
     setDownloading(date);
     try {
-      const res = await fetch('/api/export-combined', {
+      const isList = type === 'emergency' || type === 'smoke';
+      const endpoint = isList ? '/api/export-list' : '/api/export-combined';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, type, records }),
+        body: JSON.stringify({ date, type }),
       });
       if (!res.ok) { const e = await res.json().catch(() => ({})); alert(e.error || 'ดาวน์โหลดไม่สำเร็จ'); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const prefix = type === 'fpg' ? 'FPG' : type.toUpperCase();
+      const prefix = type === 'fpg' ? 'FPG' : type === 'emergency' ? 'Emergency' : 'Smoke';
       a.href = url; a.download = `${prefix}_report_${date}.xlsx`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
@@ -104,25 +106,25 @@ function HomePageInner() {
         {/* Card 2 — Emergency Light */}
         <button
           className="card card--emergency"
-          onClick={() => setComingSoon('emergency')}>
+          onClick={() => router.push(`/form/emergency?date=${today}`)}>
           <span className="card__icon">💡</span>
           <div className="card__body">
             <span className="card__title">Emergency Light</span>
             <span className="card__sub">ไฟฉุกเฉิน</span>
           </div>
-          <span className="card__badge">Soon</span>
+          <span className="card__arrow">›</span>
         </button>
 
         {/* Card 3 — Smoke Detector */}
         <button
           className="card card--smoke"
-          onClick={() => setComingSoon('smoke')}>
+          onClick={() => router.push(`/form/smoke?date=${today}`)}>
           <span className="card__icon">🚨</span>
           <div className="card__body">
             <span className="card__title">Smoke Detector</span>
             <span className="card__sub">อุปกรณ์ตรวจจับควัน</span>
           </div>
-          <span className="card__badge">Soon</span>
+          <span className="card__arrow">›</span>
         </button>
 
         {/* Card 4 — History */}
@@ -166,24 +168,6 @@ function HomePageInner() {
         </section>
       )}
 
-      {/* ── Coming Soon Modal ── */}
-      {comingSoon && (
-        <div className="overlay" onClick={() => setComingSoon(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <span className="modal__icon">
-              {comingSoon === 'emergency' ? '💡' : '🚨'}
-            </span>
-            <h2 className="modal__title">
-              {comingSoon === 'emergency' ? 'Emergency Light' : 'Smoke Detector'}
-            </h2>
-            <p className="modal__msg">ระบบนี้อยู่ระหว่างพัฒนา</p>
-            <p className="modal__sub">Coming Soon</p>
-            <button className="modal__close" onClick={() => setComingSoon(null)}>
-              ปิด
-            </button>
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         /* ─── Root ─── */
@@ -276,29 +260,27 @@ function HomePageInner() {
 
         /* Emergency Light — green */
         .card--emergency {
-          flex-direction: column;
-          align-items: flex-start;
           background: linear-gradient(135deg, #1e7e34 0%, #28a745 100%);
           box-shadow: 0 6px 18px rgba(40,167,69,0.3);
-          min-height: 130px;
-          gap: 8px;
+          min-height: 72px;
+          gap: 12px;
         }
-        .card--emergency .card__icon  { font-size: 32px; }
+        .card--emergency .card__icon  { font-size: 26px; }
         .card--emergency .card__title { color: #fff; font-size: 15px; }
         .card--emergency .card__sub   { color: rgba(255,255,255,0.75); }
+        .card--emergency .card__arrow { color: rgba(255,255,255,0.7); margin-left: auto; }
 
         /* Smoke Detector — blue */
         .card--smoke {
-          flex-direction: column;
-          align-items: flex-start;
           background: linear-gradient(135deg, #1a4a8a 0%, #2d7dd2 100%);
           box-shadow: 0 6px 18px rgba(45,125,210,0.3);
-          min-height: 130px;
-          gap: 8px;
+          min-height: 72px;
+          gap: 12px;
         }
-        .card--smoke .card__icon  { font-size: 32px; }
+        .card--smoke .card__icon  { font-size: 26px; }
         .card--smoke .card__title { color: #fff; font-size: 15px; }
         .card--smoke .card__sub   { color: rgba(255,255,255,0.75); }
+        .card--smoke .card__arrow { color: rgba(255,255,255,0.7); margin-left: auto; }
 
         /* History — dark */
         .card--history {
