@@ -12,9 +12,9 @@ const FORM_CONFIG = {
     idLabel: 'ID / รหัสอุปกรณ์',
     idKey: 'id',
     fields: [
-      { key: 'lightCondition', label: 'สภาพโคม',    opts: [{ v: 'pass', l: 'ผ่าน' },     { v: 'fail',        l: 'ไม่ผ่าน' }] },
-      { key: 'statusLight',   label: 'ไฟสถานะ',    opts: [{ v: 'normal', l: 'ปกติ' },   { v: 'abnormal',    l: 'ผิดปกติ' }] },
-      { key: 'testResult',    label: 'ผลการ Test',  opts: [{ v: 'on', l: 'ติด' },        { v: 'off',         l: 'ดับ' }] },
+      { key: 'lightCondition', label: 'สภาพโคม',    opts: [{ v: 'pass',   l: 'ผ่าน',    c: '#1a7a3f' }, { v: 'fail',        l: 'ไม่ผ่าน',  c: '#c03232' }] },
+      { key: 'statusLight',   label: 'ไฟสถานะ',    opts: [{ v: 'normal', l: 'ปกติ',    c: '#1a7a3f' }, { v: 'abnormal',    l: 'ผิดปกติ',  c: '#c03232' }] },
+      { key: 'testResult',    label: 'ผลการ Test',  opts: [{ v: 'on',     l: 'ติด',     c: '#1a7a3f' }, { v: 'off',         l: 'ดับ',      c: '#c03232' }] },
     ],
   },
   smoke: {
@@ -24,9 +24,9 @@ const FORM_CONFIG = {
     idLabel: 'Zone / Address',
     idKey: 'zone',
     fields: [
-      { key: 'externalCondition', label: 'สภาพภายนอก',       opts: [{ v: 'normal', l: 'ปกติ' },  { v: 'dirty',       l: 'สกปรก' }] },
-      { key: 'cleaned',           label: 'ทำความสะอาด',       opts: [{ v: 'yes',    l: 'ทำแล้ว' }, { v: 'no',         l: 'ไม่ทำ' }] },
-      { key: 'workingCondition',  label: 'สภาพการทำงาน',     opts: [{ v: 'normal', l: 'ปกติ' },  { v: 'not_working', l: 'ไม่ทำงาน' }] },
+      { key: 'externalCondition', label: 'สภาพภายนอก',   opts: [{ v: 'normal', l: 'ปกติ',    c: '#1a7a3f' }, { v: 'dirty',       l: 'สกปรก',    c: '#c03232' }] },
+      { key: 'cleaned',           label: 'ทำความสะอาด',   opts: [{ v: 'yes',    l: 'ทำแล้ว', c: '#1a7a3f' }, { v: 'no',          l: 'ไม่ทำ',    c: '#c03232' }] },
+      { key: 'workingCondition',  label: 'สภาพการทำงาน', opts: [{ v: 'normal', l: 'ปกติ',    c: '#1a7a3f' }, { v: 'not_working', l: 'ไม่ทำงาน', c: '#c03232' }] },
     ],
   },
 };
@@ -191,7 +191,7 @@ export default function FormPage() {
                     {f.opts.map(opt => (
                       <button key={opt.v}
                         className={`toggle-btn ${dev[f.key] === opt.v ? 'active' : ''}`}
-                        style={dev[f.key] === opt.v ? { background: accentColor, color: '#fff', borderColor: accentColor } : {}}
+                        style={dev[f.key] === opt.v ? { background: opt.c || accentColor, color: '#fff', borderColor: opt.c || accentColor } : {}}
                         onClick={() => updateDevice(idx, f.key, opt.v)}>
                         {opt.l}
                       </button>
