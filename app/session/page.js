@@ -167,7 +167,10 @@ function SessionPageInner() {
         <button className="back-btn" onClick={() => router.push('/')}>‹</button>
         <div className="header-mid">
           <span className="machine-label">{currentMachine?.label}</span>
-          <span className="step-label">{stepTitles[stepIdx]}</span>
+          <span className="step-label">
+            {currentMachine?.location_default && <span className="machine-loc">{currentMachine.location_default} · </span>}
+            {stepTitles[stepIdx]}
+          </span>
         </div>
         <GaugeProgress percent={pct} label={`${machineIdx + 1}/${totalMachines}`} />
       </header>
@@ -254,6 +257,7 @@ function SessionPageInner() {
           overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
         }
         .step-label { font-size:11px; color:var(--ink-muted); }
+        .machine-loc { color:var(--ink-secondary); font-weight:500; }
 
         /* Machine tabs */
         .machine-tabs {
