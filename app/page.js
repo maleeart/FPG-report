@@ -19,6 +19,12 @@ function HomePageInner() {
   const [hasDraft, setHasDraft] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [comingSoon, setComingSoon] = useState(null); // unused — kept for future
+  const [openGroups, setOpenGroups] = useState(new Set(['fpg', 'emergency', 'smoke']));
+  const toggleGroup = type => setOpenGroups(prev => {
+    const next = new Set(prev);
+    next.has(type) ? next.delete(type) : next.add(type);
+    return next;
+  });
   const today = new Date().toISOString().slice(0, 10);
   const SESSION_KEY = `session:${today}`;
 
@@ -147,30 +153,45 @@ function HomePageInner() {
       {/* ── History panel ── */}
       {showHistory && (
         <section className="history-panel">
-          <p className="history-title">ประวัติย้อนหลัง</p>
           {dates?.length === 0 && <p className="history-empty">ยังไม่มีประวัติ</p>}
-          {dates?.map(({ date, type, label, building, floor, filename }) => {
-            const dlKey = filename || date;
-            const location = [building, floor].filter(Boolean).join(' ');
+          {githubOk === false && <p className="history-empty">⚠ ต้องตั้งค่า GitHub token ก่อน</p>}
+          {[
+            { type: 'fpg',       icon: '🚒⚡', label: 'Fire Pump & Generator', accent: '#c0392b' },
+            { type: 'emergency', icon: '💡',   label: 'Emergency Light',        accent: '#1e7e34' },
+            { type: 'smoke',     icon: '🚨',   label: 'Smoke Detector',         accent: '#1a4a8a' },
+          ].map(({ type, icon, label, accent }) => {
+            const group = (dates || []).filter(d => d.type === type);
+            if (!group.length) return null;
+            const isOpen = openGroups.has(type);
             return (
-              <div key={filename || `${type}_${date}`} className={`hist-row ${date === today ? 'hist-row--today' : ''}`}>
-                <div className="hist-info">
-                  <span className="hist-label">{label}</span>
-                  {location && <span className="hist-location">{location}</span>}
-                  <span className="hist-date">{date}{date === today ? ' · วันนี้' : ''}</span>
-                </div>
-                <button
-                  className="btn-dl"
-                  disabled={!!downloading}
-                  onClick={() => handleDownload(date, type, filename, building, floor)}>
-                  {downloading === dlKey ? '⏳' : '⬇︎ Excel'}
+              <div key={type} className="hist-group">
+                <button className="hist-group-hd" onClick={() => toggleGroup(type)}
+                  style={{ borderLeft: `4px solid ${accent}` }}>
+                  <span className="hist-group-icon">{icon}</span>
+                  <span className="hist-group-label">{label}</span>
+                  <span className="hist-group-count">{group.length}</span>
+                  <span className="hist-group-arrow">{isOpen ? '⌄' : '›'}</span>
                 </button>
+                {isOpen && group.map(({ date, building, floor, filename }) => {
+                  const dlKey = filename || date;
+                  const location = [building, floor].filter(Boolean).join(' · ');
+                  return (
+                    <div key={filename || `${type}_${date}`}
+                      className={`hist-row ${date === today ? 'hist-row--today' : ''}`}>
+                      <div className="hist-info">
+                        {location && <span className="hist-location">{location}</span>}
+                        <span className="hist-date">{date}{date === today ? ' · วันนี้' : ''}</span>
+                      </div>
+                      <button className="btn-dl" disabled={!!downloading}
+                        onClick={() => handleDownload(date, type, filename, building, floor)}>
+                        {downloading === dlKey ? '⏳' : '⬇︎ Excel'}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
-          {githubOk === false && (
-            <p className="history-empty">⚠ ต้องตั้งค่า GitHub token ก่อน</p>
-          )}
         </section>
       )}
 
@@ -339,44 +360,72 @@ function HomePageInner() {
         /* ─── History Panel ─── */
         .history-panel {
           margin: 14px 16px 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .history-empty {
+          padding: 10px 16px;
+          font-size: 14px;
+          color: var(--ink-muted);
+          margin: 0;
+        }
+
+        /* Group */
+        .hist-group {
           background: var(--bg-surface);
           border: 1px solid var(--border-hairline);
           border-radius: 16px;
           overflow: hidden;
         }
-        .history-title {
-          font-size: 11px;
-          font-weight: 700;
-          color: var(--ink-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.07em;
-          padding: 12px 16px 6px;
-          margin: 0;
+        .hist-group-hd {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          background: var(--bg-surface-raised);
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          -webkit-tap-highlight-color: transparent;
         }
-        .history-empty {
-          padding: 10px 16px 14px;
+        .hist-group-icon { font-size: 18px; flex-shrink: 0; }
+        .hist-group-label {
+          flex: 1;
           font-size: 14px;
-          color: var(--ink-muted);
-          margin: 0;
+          font-weight: 700;
+          color: var(--ink-primary);
         }
+        .hist-group-count {
+          font-size: 12px;
+          font-weight: 600;
+          background: var(--border-hairline);
+          color: var(--ink-muted);
+          border-radius: 20px;
+          padding: 2px 8px;
+        }
+        .hist-group-arrow {
+          font-size: 18px;
+          color: var(--ink-muted);
+          line-height: 1;
+          flex-shrink: 0;
+        }
+
+        /* Rows */
         .hist-row {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 11px 16px;
+          padding: 10px 14px;
           border-top: 1px solid var(--border-hairline);
         }
-        .hist-row--today { background: rgba(210,87,53,0.06); }
-        .hist-info { display: flex; flex-direction: column; gap: 1px; }
-        .hist-label {
+        .hist-row--today { background: rgba(210,87,53,0.05); }
+        .hist-info { display: flex; flex-direction: column; gap: 2px; }
+        .hist-location {
           font-size: 13px;
           font-weight: 600;
           color: var(--ink-primary);
-        }
-        .hist-location {
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--ink-secondary);
         }
         .hist-date {
           font-family: var(--font-mono);
@@ -392,6 +441,7 @@ function HomePageInner() {
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
+          flex-shrink: 0;
         }
         .btn-dl:disabled { opacity: 0.5; }
 
