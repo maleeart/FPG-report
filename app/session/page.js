@@ -129,7 +129,7 @@ function SessionPageInner() {
         await fetch('/api/save-record', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date, records }),
+          body: JSON.stringify({ date, records, type: 'fpg' }),
         });
       } catch {}
 

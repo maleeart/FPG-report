@@ -17,16 +17,16 @@ export async function POST(request) {
 
     // Option A: session (records object)
     if (body.records) {
-      const { date, records } = body;
+      const { date, records, type = 'fpg' } = body;
       if (!date || !records) return NextResponse.json({ error: 'ต้องระบุ date และ records' }, { status: 400 });
-      const result = await saveInspectionRecord('__session__', date, { date, records });
+      const result = await saveInspectionRecord('__session__', date, { date, type, records }, type);
       return NextResponse.json({ ok: true, path: result.path });
     }
 
     // Option B: single machine
     if (body.machineId) {
-      const { machineId, inspectionDate, ...data } = body;
-      const result = await saveInspectionRecord(machineId, inspectionDate, body);
+      const { machineId, inspectionDate, type = 'fpg' } = body;
+      const result = await saveInspectionRecord(machineId, inspectionDate, body, type);
       return NextResponse.json({ ok: true, path: result.path });
     }
 

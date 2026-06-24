@@ -20,14 +20,15 @@ const execFileAsync = promisify(execFile);
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const date = searchParams.get('date');
+    const date   = searchParams.get('date');
     const format = searchParams.get('format') || 'xlsx';
+    const type   = searchParams.get('type') || 'fpg';
     if (!date) return NextResponse.json({ error: 'ต้องระบุ date' }, { status: 400 });
 
     // โหลดข้อมูลจาก GitHub
     let dayData = null;
     try {
-      dayData = await loadInspectionByDate(date);
+      dayData = await loadInspectionByDate(date, type);
     } catch {
       dayData = null;
     }

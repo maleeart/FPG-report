@@ -19,14 +19,14 @@ const TEMPLATE_PATH = path.join(process.cwd(), 'templates', 'Template_FPG.xlsx')
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { date, records: clientRecords } = body;
+    const { date, records: clientRecords, type = 'fpg' } = body;
 
     let records = clientRecords;
 
     // ถ้าไม่ได้ส่ง records มา → ดึงจาก GitHub
     if (!records) {
       try {
-        const dayData = await loadInspectionByDate(date);
+        const dayData = await loadInspectionByDate(date, type);
         records = dayData?.records;
       } catch (e) {
         return NextResponse.json({ error: 'ดึงข้อมูลจาก GitHub ไม่สำเร็จ: ' + e.message }, { status: 500 });

@@ -10,7 +10,8 @@ export async function GET(request) {
     const date = searchParams.get('date');
 
     if (date) {
-      const data = await loadInspectionByDate(date);
+      const type = request.nextUrl?.searchParams?.get('type') || new URL(request.url).searchParams.get('type') || 'fpg';
+      const data = await loadInspectionByDate(date, type);
       if (!data) return NextResponse.json({ error: 'ไม่พบข้อมูล' }, { status: 404 });
       return NextResponse.json(data);
     }

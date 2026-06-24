@@ -1,61 +1,35 @@
 /**
- * githubStorage.js v2
+ * githubStorage.js v3
  *
- * โครงสร้างไฟล์ใน GitHub:
- *   data/inspections/<YYYY-MM-DD>.json
+ * โครงสร้างไฟล์ใน GitHub branch "data":
+ *   data/inspections/<type>_<YYYY-MM-DD>.json
+ *   เช่น fpg_2026-06-24.json, emergency_2026-06-24.json
  *
  * รูปแบบ JSON:
  * {
- *   "date": "2026-06-23",
- *   "records": {
- *     "fire-pump-1": { machineId, inspectionDate, generalData, ... },
- *     "fire-pump-2": { ... },
- *     "generator-1": { ... }
- *   }
+ *   "date": "2026-06-24",
+ *   "type": "fpg",
+ *   "records": { "fire-pump-1": {...}, ... }
  * }
  *
- * ใช้ 1 ไฟล์ต่อวัน รวมทุกเครื่อง — ดึงจาก GitHub ได้จากเครื่องไหนก็ได้
+ * branch "data" แยกจาก "main" (โค้ด) — สร้างอัตโนมัติถ้ายังไม่มี
  */
 
 const BASE = 'https://api.github.com';
+const DATA_BRANCH = 'data'; // hardcode — ไม่ใช้ env var เพื่อป้องกัน override โดยไม่ตั้งใจ
+
+const TYPE_LABELS = {
+  fpg:       'Fire Pump & Generator',
+  emergency: 'Emergency Light',
+  smoke:     'Smoke Detector',
+};
 
 function cfg() {
   const token = process.env.GITHUB_TOKEN;
   const owner = process.env.GITHUB_REPO_OWNER;
-  const repo = process.env.GITHUB_REPO_NAME;
-  const branch = process.env.GITHUB_REPO_BRANCH || 'data';
+  const repo  = process.env.GITHUB_REPO_NAME;
   if (!token || !owner || !repo) throw new Error('ตั้งค่า GitHub ENV ไม่ครบ');
-  return { token, owner, repo, branch };
-}
-
-/** สร้าง branch สำหรับเก็บข้อมูลถ้ายังไม่มี (branch off จาก main หรือ branch แรกที่เจอ) */
-async function ensureDataBranch(branch) {
-  const { owner, repo } = cfg();
-  const check = await ghReq(`/repos/${owner}/${repo}/git/ref/heads/${branch}`);
-  if (check.status === 200) return;
-
-  // หา SHA ของ main ก่อน ถ้าไม่มีให้ลอง branch อื่นที่มีอยู่
-  let sha;
-  for (const ref of ['main', 'master']) {
-    const r = await ghReq(`/repos/${owner}/${repo}/git/ref/heads/${ref}`);
-    if (r.status === 200) { sha = (await r.json()).object.sha; break; }
-  }
-  if (!sha) throw new Error('ไม่พบ branch ต้นทางสำหรับสร้าง data branch');
-
-  const res = await ghReq(`/repos/${owner}/${repo}/git/refs`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ref: `refs/heads/${branch}`, sha }),
-  });
-  if (!res.ok && res.status !== 422) {
-    throw new Error(`สร้าง branch ไม่สำเร็จ HTTP ${res.status}`);
-  }
-}
-
-function datePath(date) {
-  const safe = String(date).replace(/[^0-9-]/g, '');
-  if (!safe) throw new Error('date ไม่ถูกต้อง');
-  return `data/inspections/${safe}.json`;
+  return { token, owner, repo, branch: DATA_BRANCH };
 }
 
 async function ghReq(path, opts = {}) {
@@ -71,10 +45,38 @@ async function ghReq(path, opts = {}) {
   });
 }
 
-/** โหลดข้อมูลวันที่ระบุ → { date, records: { machineId: data } } หรือ null */
-async function loadSessionByDate(date) {
+/** สร้าง branch data ถ้ายังไม่มี (branch off จาก main/master) */
+async function ensureDataBranch() {
+  const { owner, repo } = cfg();
+  const check = await ghReq(`/repos/${owner}/${repo}/git/ref/heads/${DATA_BRANCH}`);
+  if (check.status === 200) return;
+
+  let sha;
+  for (const ref of ['main', 'master']) {
+    const r = await ghReq(`/repos/${owner}/${repo}/git/ref/heads/${ref}`);
+    if (r.status === 200) { sha = (await r.json()).object.sha; break; }
+  }
+  if (!sha) throw new Error('ไม่พบ branch ต้นทางสำหรับสร้าง data branch');
+
+  const res = await ghReq(`/repos/${owner}/${repo}/git/refs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ref: `refs/heads/${DATA_BRANCH}`, sha }),
+  });
+  if (!res.ok && res.status !== 422) throw new Error(`สร้าง branch ไม่สำเร็จ HTTP ${res.status}`);
+}
+
+function datePath(date, type = 'fpg') {
+  const safeDate = String(date).replace(/[^0-9-]/g, '');
+  const safeType = String(type).replace(/[^a-z]/g, '');
+  if (!safeDate || !safeType) throw new Error('date หรือ type ไม่ถูกต้อง');
+  return `data/inspections/${safeType}_${safeDate}.json`;
+}
+
+/** โหลดข้อมูลวันที่ระบุ */
+async function loadSessionByDate(date, type = 'fpg') {
   const { owner, repo, branch } = cfg();
-  const path = datePath(date);
+  const path = datePath(date, type);
   const res = await ghReq(`/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`โหลดไม่สำเร็จ HTTP ${res.status}`);
@@ -82,17 +84,13 @@ async function loadSessionByDate(date) {
   return JSON.parse(Buffer.from(json.content, 'base64').toString('utf-8'));
 }
 
-/**
- * บันทึก session (ทุกเครื่อง) ลงไฟล์เดียว
- * dayData = { date, records: { machineId: formData } }
- */
-async function saveSessionByDate(date, dayData) {
+/** บันทึก session ลงไฟล์ */
+async function saveSessionByDate(date, dayData, type = 'fpg') {
   const { owner, repo, branch } = cfg();
-  await ensureDataBranch(branch);
-  const path = datePath(date);
+  await ensureDataBranch();
+  const path = datePath(date, type);
   const apiPath = `/repos/${owner}/${repo}/contents/${path}`;
 
-  // หา sha ของไฟล์เดิม (ถ้ามี)
   let sha;
   const existing = await ghReq(`${apiPath}?ref=${branch}`);
   if (existing.status === 200) {
@@ -102,12 +100,15 @@ async function saveSessionByDate(date, dayData) {
   }
 
   const content = Buffer.from(JSON.stringify(dayData, null, 2), 'utf-8').toString('base64');
-  const msg = `บันทึกผลตรวจสอบวันที่ ${date}`;
-
   const put = await ghReq(apiPath, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: msg, content, branch, ...(sha ? { sha } : {}) }),
+    body: JSON.stringify({
+      message: `บันทึกผลตรวจสอบ [${type}] วันที่ ${date}`,
+      content,
+      branch,
+      ...(sha ? { sha } : {}),
+    }),
   });
 
   if (!put.ok) {
@@ -117,21 +118,21 @@ async function saveSessionByDate(date, dayData) {
   return { path };
 }
 
-/**
- * บันทึกข้อมูลเครื่องเดียว (merge เข้ากับ records ที่มีอยู่แล้วในวันนั้น)
- */
-async function saveInspectionRecord(machineId, date, machineData) {
-  const existing = await loadSessionByDate(date).catch(() => null);
-  const dayData = existing || { date, records: {} };
+/** บันทึกข้อมูลเครื่องเดียว (merge เข้ากับ records ที่มีอยู่) */
+async function saveInspectionRecord(machineId, date, machineData, type = 'fpg') {
+  const existing = await loadSessionByDate(date, type).catch(() => null);
+  const dayData = existing || { date, type, records: {} };
   if (machineId === '__session__') {
-    // บันทึกทั้ง session พร้อมกัน
-    return saveSessionByDate(date, machineData);
+    return saveSessionByDate(date, { ...machineData, type }, type);
   }
   dayData.records[machineId] = machineData;
-  return saveSessionByDate(date, dayData);
+  return saveSessionByDate(date, dayData, type);
 }
 
-/** รายชื่อวันที่ทั้งหมดที่มีข้อมูล (เรียงใหม่→เก่า) */
+/**
+ * รายการวันที่ทั้งหมดที่มีข้อมูล
+ * คืน [{ date, type, label }] เรียงใหม่→เก่า
+ */
 async function listInspectionDates() {
   const { owner, repo, branch } = cfg();
   const res = await ghReq(`/repos/${owner}/${repo}/contents/data/inspections?ref=${branch}`);
@@ -140,13 +141,19 @@ async function listInspectionDates() {
   const items = await res.json();
   return items
     .filter(i => i.type === 'file' && i.name.endsWith('.json'))
-    .map(i => i.name.replace(/\.json$/, ''))
-    .sort().reverse();
+    .map(i => {
+      const name = i.name.replace(/\.json$/, '');       // "fpg_2026-06-24"
+      const sep  = name.indexOf('_');
+      const type = sep >= 0 ? name.slice(0, sep) : 'fpg';
+      const date = sep >= 0 ? name.slice(sep + 1) : name;
+      return { date, type, label: TYPE_LABELS[type] || type.toUpperCase() };
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));      // เรียงใหม่→เก่า
 }
 
 /** ดึงข้อมูลวันที่ระบุ (alias) */
-async function loadInspectionByDate(date) {
-  return loadSessionByDate(date);
+async function loadInspectionByDate(date, type = 'fpg') {
+  return loadSessionByDate(date, type);
 }
 
 module.exports = {

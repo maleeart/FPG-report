@@ -39,19 +39,20 @@ function HomePageInner() {
   }, []);
 
   // ── handler เดิม ─────────────────────────────────────────────────────────
-  const handleDownload = async (date, records = null) => {
+  const handleDownload = async (date, type = 'fpg', records = null) => {
     setDownloading(date);
     try {
       const res = await fetch('/api/export-combined', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, records }),
+        body: JSON.stringify({ date, type, records }),
       });
       if (!res.ok) { const e = await res.json().catch(() => ({})); alert(e.error || 'ดาวน์โหลดไม่สำเร็จ'); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `FPG_report_${date}.xlsx`;
+      const prefix = type === 'fpg' ? 'FPG' : type.toUpperCase();
+      a.href = url; a.download = `${prefix}_report_${date}.xlsx`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
@@ -145,13 +146,16 @@ function HomePageInner() {
         <section className="history-panel">
           <p className="history-title">ประวัติย้อนหลัง</p>
           {dates?.length === 0 && <p className="history-empty">ยังไม่มีประวัติ</p>}
-          {dates?.map(date => (
-            <div key={date} className={`hist-row ${date === today ? 'hist-row--today' : ''}`}>
-              <span className="hist-date">{date}{date === today ? ' · วันนี้' : ''}</span>
+          {dates?.map(({ date, type, label }) => (
+            <div key={`${type}_${date}`} className={`hist-row ${date === today ? 'hist-row--today' : ''}`}>
+              <div className="hist-info">
+                <span className="hist-label">{label}</span>
+                <span className="hist-date">{date}{date === today ? ' · วันนี้' : ''}</span>
+              </div>
               <button
                 className="btn-dl"
                 disabled={!!downloading}
-                onClick={() => handleDownload(date)}>
+                onClick={() => handleDownload(date, type)}>
                 {downloading === date ? '⏳' : '⬇︎ Excel'}
               </button>
             </div>
@@ -375,10 +379,16 @@ function HomePageInner() {
           border-top: 1px solid var(--border-hairline);
         }
         .hist-row--today { background: rgba(210,87,53,0.06); }
+        .hist-info { display: flex; flex-direction: column; gap: 1px; }
+        .hist-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ink-primary);
+        }
         .hist-date {
           font-family: var(--font-mono);
-          font-size: 14px;
-          color: var(--ink-primary);
+          font-size: 12px;
+          color: var(--ink-muted);
         }
         .btn-dl {
           background: #1a7a3f;

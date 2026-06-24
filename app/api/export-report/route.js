@@ -26,7 +26,7 @@ export async function POST(request) {
     // บันทึกประวัติ GitHub (best-effort)
     let githubSaveStatus = 'skipped';
     try {
-      await saveInspectionRecord(data.machineId, data.inspectionDate, data);
+      await saveInspectionRecord(data.machineId, data.inspectionDate, data, 'fpg');
       githubSaveStatus = 'saved';
     } catch (err) {
       console.error('บันทึกประวัติ GitHub ไม่สำเร็จ:', err.message);
