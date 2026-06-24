@@ -51,7 +51,7 @@ function HomePageInner() {
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `veri_${date}.xlsx`;
+      a.href = url; a.download = `FPG_report_${date}.xlsx`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
