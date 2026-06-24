@@ -36,6 +36,7 @@ async function ghReq(path, opts = {}) {
   const { token } = cfg();
   return fetch(`${BASE}${path}`, {
     ...opts,
+    cache: 'no-store',
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
