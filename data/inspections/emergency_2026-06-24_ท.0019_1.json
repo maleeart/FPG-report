@@ -1,0 +1,33 @@
+{
+  "date": "2026-06-24",
+  "type": "emergency",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-24",
+      "building": "ท.0019",
+      "floor": "1",
+      "inspector": "",
+      "model": "",
+      "serial": "",
+      "mfg": ""
+    },
+    "devices": [
+      {
+        "location": "ว",
+        "remarks": "",
+        "id": "ม",
+        "lightCondition": "pass",
+        "statusLight": "normal",
+        "testResult": "on"
+      },
+      {
+        "location": "เ",
+        "remarks": "",
+        "id": "พ",
+        "lightCondition": "pass",
+        "statusLight": "normal",
+        "testResult": "on"
+      }
+    ]
+  }
+}
