@@ -45,7 +45,7 @@ export default function SignaturePad({ label, value, onChange }) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const point = getPoint(e);
-    ctx.strokeStyle = '#f2f3f5';
+    ctx.strokeStyle = '#1a3fbf';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';

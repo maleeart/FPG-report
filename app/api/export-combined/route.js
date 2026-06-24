@@ -38,7 +38,7 @@ export async function POST(request) {
     }
 
     const xlsxBuf = await generateCombinedReport(records, TEMPLATE_PATH);
-    const filename = `veri_${date || 'report'}.xlsx`;
+    const filename = `FPG_report_${date || 'report'}.xlsx`;
 
     return new NextResponse(xlsxBuf, {
       status: 200,

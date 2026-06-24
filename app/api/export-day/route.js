@@ -37,7 +37,7 @@ export async function GET(request) {
 
     // สร้าง Excel รวมทุกเครื่อง
     const xlsxBuf = await generateCombinedReport(dayData.records, TEMPLATE_PATH);
-    const filename = `veri_report_${date}`;
+    const filename = `FPG_report_${date}`;
 
     if (format === 'pdf') {
       // แปลง xlsx → pdf ผ่าน LibreOffice (ใช้ได้เฉพาะบน server ที่มี soffice)

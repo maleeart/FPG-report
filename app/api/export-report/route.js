@@ -35,7 +35,7 @@ export async function POST(request) {
 
     // ชื่อไฟล์ใช้วันที่ตรวจสอบ
     const date = data.inspectionDate || new Date().toISOString().slice(0, 10);
-    const filename = `${data.machineId}_${date}.xlsx`;
+    const filename = `FPG_report_${date}_${data.machineId}.xlsx`;
 
     return new NextResponse(buffer, {
       status: 200,
