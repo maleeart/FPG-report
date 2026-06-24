@@ -4,8 +4,8 @@
   "records": {
     "general": {
       "inspectionDate": "2026-06-24",
-      "building": "0010",
-      "floor": "2",
+      "building": "",
+      "floor": "",
       "inspector": "",
       "model": "",
       "serial": "",
@@ -15,7 +15,15 @@
       {
         "location": "",
         "remarks": "",
-        "zone": "4",
+        "zone": "",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "not_working"
+      },
+      {
+        "location": "",
+        "remarks": "",
+        "zone": "",
         "externalCondition": "normal",
         "cleaned": "yes",
         "workingCondition": "normal"
