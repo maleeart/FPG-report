@@ -37,7 +37,15 @@ function SessionPageInner() {
   const [stepIdx, setStepIdx] = useState(0);
   const [submitState, setSubmitState] = useState('idle');
   const [submitError, setSubmitError] = useState(null);
+  const [sessionDate, setSessionDate] = useState(date);
   const saveTimerRef = useRef(null);
+
+  const handleDateChange = (newDate) => {
+    setSessionDate(newDate);
+    setRecords(prev => Object.fromEntries(
+      Object.entries(prev).map(([id, d]) => [id, { ...d, inspectionDate: newDate }])
+    ));
+  };
 
   // โหลด field-map
   useEffect(() => {
@@ -130,14 +138,14 @@ function SessionPageInner() {
         await fetch('/api/save-record', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date, records, type: 'fpg' }),
+          body: JSON.stringify({ date: sessionDate, records, type: 'fpg' }),
         });
       } catch {}
 
       // ลบ draft
       localStorage.removeItem(DRAFT_KEY);
       // กลับหน้าหลัก — ให้ดาวน์โหลดไฟล์เองจากหน้าหลัก
-      router.push(`/?saved=${date}`);
+      router.push(`/?saved=${sessionDate}`);
     } catch (err) {
       setSubmitError(String(err.message || err));
       setSubmitState('error');
@@ -202,6 +210,13 @@ function SessionPageInner() {
 
       {/* Form body */}
       <section className="body">
+        {stepIdx === 0 && (
+          <div className="date-row">
+            <label className="date-label">วันที่ตรวจสอบ</label>
+            <input type="date" className="date-input" value={sessionDate}
+              onChange={e => handleDateChange(e.target.value)} />
+          </div>
+        )}
         <h2 className="step-title">{stepTitles[stepIdx]}</h2>
 
         {stepIdx === 0 && (
@@ -307,6 +322,17 @@ function SessionPageInner() {
         .step-tab-lbl { font-size:9px; font-weight:500; line-height:1; white-space:nowrap; }
 
         .body { flex:1; padding:14px 14px 140px; overflow-x:hidden; width:100%; box-sizing:border-box; }
+        .date-row {
+          display:flex; align-items:center; justify-content:space-between;
+          padding:10px 12px; margin-bottom:12px;
+          background:var(--bg-surface); border:1.5px solid var(--accent);
+          border-radius:var(--radius-md);
+        }
+        .date-label { font-size:13px; font-weight:700; color:var(--ink-primary); }
+        .date-input {
+          border:none; background:transparent; font-size:14px; font-weight:600;
+          color:var(--accent); font-family:var(--font-mono); outline:none; cursor:pointer;
+        }
         .step-title { font-size:16px; font-weight:700; margin:0 0 12px; }
 
         .err-banner { margin:0 14px 8px; padding:10px 12px;
