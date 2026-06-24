@@ -1,0 +1,41 @@
+{
+  "date": "2026-06-25",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-25",
+      "building": "ท.0007",
+      "floor": "1",
+      "inspector": "",
+      "model": "",
+      "serial": "",
+      "mfg": ""
+    },
+    "devices": [
+      {
+        "location": "",
+        "remarks": "",
+        "zone": "",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องน้ำ",
+        "remarks": "",
+        "zone": "1",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "",
+        "remarks": "",
+        "zone": "",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "not_working"
+      }
+    ]
+  }
+}
