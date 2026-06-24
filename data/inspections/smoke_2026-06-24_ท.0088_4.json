@@ -1,0 +1,33 @@
+{
+  "date": "2026-06-24",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-24",
+      "building": "ท.0088",
+      "floor": "4",
+      "inspector": "",
+      "model": "",
+      "serial": "",
+      "mfg": ""
+    },
+    "devices": [
+      {
+        "location": "่่",
+        "remarks": "",
+        "zone": "าา",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ทท",
+        "remarks": "",
+        "zone": "่่",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
