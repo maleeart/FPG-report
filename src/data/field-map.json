@@ -262,13 +262,13 @@
       "approved_by_date": "CY107",
       "signature_inspector": {
         "col": 42,
-        "row": 104,
+        "row": 106,
         "col2": 83,
         "row2": 107
       },
       "signature_approver": {
         "col": 83,
-        "row": 104,
+        "row": 106,
         "col2": 103,
         "row2": 107
       }
@@ -441,13 +441,13 @@
       "approved_by_date": "CY95",
       "signature_inspector": {
         "col": 42,
-        "row": 92,
+        "row": 94,
         "col2": 83,
         "row2": 95
       },
       "signature_approver": {
         "col": 83,
-        "row": 92,
+        "row": 94,
         "col2": 103,
         "row2": 95
       },
