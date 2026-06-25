@@ -9,7 +9,6 @@ import os
 import subprocess
 import shutil
 from openpyxl import load_workbook
-from openpyxl.worksheet.page import PageSetup
 
 
 def fix_and_convert(input_path, output_path):
