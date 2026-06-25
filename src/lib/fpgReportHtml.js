@@ -59,6 +59,7 @@ function header(machineInfo, data, logoB64, sheet) {
 
 function generalDatas(machineInfo, data) {
   const g  = data.generalData || {};
+  const a  = data.afterRun    || {};
   const fp = machineInfo?.type === 'fire_pump';
   return `
 <table style="margin-bottom:6px">
@@ -67,7 +68,7 @@ function generalDatas(machineInfo, data) {
   </tr>
   <tr>
     <td style="width:100px;font-weight:bold">Location</td>
-    <td colspan="2">${v(g.location || machineInfo?.location_default)}</td>
+    <td colspan="2">${v(machineInfo?.location_default)}</td>
     <td style="font-weight:bold">ชนิด</td>
     <td>${fp ? 'Vertical' : 'Standby'}</td>
     <td style="font-weight:bold">Station No.</td>
@@ -75,22 +76,22 @@ function generalDatas(machineInfo, data) {
   </tr>
   <tr>
     <td style="font-weight:bold">Model</td>
-    <td>${v(g.model || machineInfo?.model_default)}</td>
+    <td>${v(machineInfo?.model_default)}</td>
     <td style="font-weight:bold">Serial-Number</td>
-    <td colspan="2">${v(g.serialNumber || machineInfo?.serial_default)}</td>
+    <td colspan="2">${v(machineInfo?.serial_default)}</td>
     <td style="font-weight:bold">MFG</td>
-    <td>${v(g.manufacturer || machineInfo?.mfg_default)}</td>
-    <td>${v(g.rpmRating || machineInfo?.rpm_rating_default)} RPM</td>
+    <td>${v(machineInfo?.mfg_default)}</td>
+    <td>${v(machineInfo?.rpm_rating_default)} RPM</td>
   </tr>
   <tr>
     <td style="font-weight:bold">Fuel Level</td>
-    <td colspan="3">Before: ${v(g.fuelBefore)} L &nbsp;/&nbsp; After: ${v(g.fuelAfter)} L</td>
+    <td colspan="3">Before: ${v(g.fuelBefore)} L &nbsp;/&nbsp; After: ${v(a.fuelAfter)} L</td>
     <td style="font-weight:bold">ชั่วโมงทำงาน</td>
-    <td colspan="3">Before: ${v(g.runningHoursBefore)} / After: ${v(g.runningHoursAfter)} Hrs.</td>
+    <td colspan="3">Before: ${v(g.runningHoursBefore)} / After: ${v(a.runningHoursAfter)} Hrs.</td>
   </tr>
   <tr>
     <td style="font-weight:bold">ระยะเวลาทดสอบ</td>
-    <td colspan="3">${v(g.runDurationMins)} นาที</td>
+    <td colspan="3">${v(g.runDurationMins)} นาที${fp ? '' : ' &nbsp; | &nbsp; จำนวนครั้ง: ' + v(g.runCount) + ' ครั้ง'}</td>
     <td style="font-weight:bold">วันที่ตรวจสอบ</td>
     <td colspan="3">${data.inspectionDate || ''}</td>
   </tr>
@@ -186,33 +187,42 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
     ? a.conclusionText
     : (tmpl?.sheet_data_fields?.conclusion_default || []).join('\n');
 
+  const jp   = r.jockeyPump  || {};
+  const elec = r.electrical  || {};
+
   const measuresFp = [
-    ['ความดันน้ำในระบบก่อนเดินเครื่อง', v(r.engine_system_water_pressure) + ' bar'],
-    ['แรงดันแบตเตอรี่ชุด 1', v(r.battery_voltage_1) + ' V'],
-    ['แรงดันแบตเตอรี่ชุด 2', v(r.battery_voltage_2) + ' V'],
-    ['แรงดัน Jockey L1-L2 / L2-L3 / L1-L3',
-      v(r.jockeyVoltage?.L1L2) + ' / ' + v(r.jockeyVoltage?.L2L3) + ' / ' + v(r.jockeyVoltage?.L1L3) + ' V'],
+    ['ความดันน้ำในระบบก่อนเดินเครื่อง (Psi)', v(r.waterPressure)],
+    ['แรงดันแบตเตอรี่ Battery #1 (Volt)', v(r.battery1Voltage)],
+    ['แรงดันแบตเตอรี่ Battery #2 (Volt)', v(r.battery2Voltage)],
+    ['แรงดัน Jockey Pump L1-L2 / L2-L3 / L1-L3 (V)',
+      v(jp.voltageL1L2) + ' / ' + v(jp.voltageL2L3) + ' / ' + v(jp.voltageL1L3)],
+    ['กระแส Jockey Pump L1 / L2 / L3 (A)',
+      v(jp.currentL1) + ' / ' + v(jp.currentL2) + ' / ' + v(jp.currentL3)],
   ];
   const measuresGen = [
-    ['แรงดันแบตเตอรี่', v(r.battery_voltage) + ' V'],
+    ['แรงดันแบตเตอรี่ (Volt)', v(r.batteryVoltage)],
+    ['ค่าแรงดัน Off Load L1-N / L2-N / L3-N (V)',
+      v(elec.offload_L1N) + ' / ' + v(elec.offload_L2N) + ' / ' + v(elec.offload_L3N)],
+    ['ค่าแรงดัน Off Load L1-L2 / L2-L3 / L1-L3 (V)',
+      v(elec.offload_L1L2) + ' / ' + v(elec.offload_L2L3) + ' / ' + v(elec.offload_L1L3)],
   ];
 
   const testFp = [
-    ['รอบเครื่องยนต์', v(t.rpm) + ' RPM'],
-    ['ความดันน้ำมันเครื่อง', v(t.oil_pressure) + ' PSI'],
-    ['ความดันน้ำระบายความร้อน', v(t.cooling_water_pressure) + ' PSI'],
-    ['อุณหภูมิน้ำหล่อเย็น @10 นาที', v(t.coolant_temp_10min) + ' °C'],
-    ['ความดันน้ำในระบบขณะเดิน', v(t.system_water_pressure) + ' PSI'],
-    ['อัตราการสิ้นเปลืองน้ำมัน', v(t.fuel_consumption_per_run) + ' L/run'],
+    ['ความเร็วรอบ (RPM)', v(t.rpm)],
+    ['แรงดันน้ำมันเครื่อง (Psi)', v(t.oilPressure)],
+    ['อุณหภูมิน้ำหล่อเย็น (°C)', v(t.coolantTemp)],
+    ['แรงดันน้ำระบายความร้อน (Psi)', v(t.coolingPressure)],
+    ['แรงดันน้ำในระบบขณะเดิน (Psi)', v(t.systemPressure)],
+    ['อัตราการใช้เชื้อเพลิง (Liters)', v(t.fuelConsumption)],
   ];
   const testGen = [
-    ['รอบเครื่องยนต์', v(t.rpm) + ' RPM'],
-    ['ความดันน้ำมันเครื่อง', v(t.oil_pressure) + ' PSI'],
-    ['อุณหภูมิน้ำหล่อเย็น', v(t.coolant_temp) + ' °C'],
-    ['แรงดัน L1-L2/L2-L3/L1-L3', v(t.voltageL1L2)+'/'+v(t.voltageL2L3)+'/'+v(t.voltageL1L3) + ' V'],
-    ['กระแส L1/L2/L3', v(t.currentL1)+'/'+v(t.currentL2)+'/'+v(t.currentL3) + ' A'],
-    ['ความถี่', v(t.frequency) + ' Hz'],
-    ['แรงดันชาร์จแบตเตอรี่', v(t.chargeVoltage) + ' V'],
+    ['ความเร็วรอบ (RPM)', v(t.rpm)],
+    ['แรงดันน้ำมันเครื่อง (Psi)', v(t.oilPressure)],
+    ['อุณหภูมิน้ำหล่อเย็น (°C)', v(t.coolantTemp)],
+    ['แรงดันชาร์จแบตเตอรี่ (Volt)', v(t.chargeVoltage)],
+    ['ความถี่ไฟฟ้า (Hz)', v(t.frequency)],
+    ['แรงดันน้ำในระบบ (Psi)', v(t.systemPressure)],
+    ['อัตราการใช้เชื้อเพลิง (Liters)', v(t.fuelConsumption)],
   ];
 
   const approverImg = approverSigB64
