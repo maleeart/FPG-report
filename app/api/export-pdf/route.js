@@ -42,20 +42,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'ไม่พบข้อมูล' }, { status: 404 });
     }
 
-    // หา machine info
-    const machineId = filename?.replace(/_\d{4}-\d{2}-\d{2}$/, '') || Object.keys(records)[0];
-    const machineInfo = (fieldMap.machines || []).find(m => m.id === machineId) || { id: machineId, type };
-
-    // เลือก record แรก
-    const firstKey = Object.keys(records)[0];
-    const data = records[firstKey] || records;
-
     // Embed logo + approver signature เป็น base64
     const logoBase64 = readBase64(path.join(process.cwd(), 'public/assets/shared/egat-logo.jpg'));
     const approverSigBase64 = readBase64(path.join(process.cwd(), 'public/assets/shared/signature-approver.png'));
 
-    // Generate HTML
-    const html = generateFpgReportHtml(data, machineInfo, logoBase64, approverSigBase64);
+    // Generate HTML ทุกเครื่องในวันนั้น (records = { machineId: data, ... })
+    const html = generateFpgReportHtml(records, logoBase64, approverSigBase64);
 
     // ส่ง HTML ไปแปลงเป็น PDF ที่ Railway (puppeteer)
     const convertRes = await fetch(`${loUrl.replace(/\/$/, '')}/convert-html`, {
