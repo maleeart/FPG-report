@@ -27,7 +27,9 @@ app.post('/convert', async (req, res) => {
       exec(
         `python3 /app/convert.py "${xlsxPath}" "${pdfPath}"`,
         { timeout: 90000 },
-        (err, _stdout, stderr) => {
+        (err, stdout, stderr) => {
+          if (stdout) console.log('[convert.py stdout]\n' + stdout);
+          if (stderr) console.log('[convert.py stderr]\n' + stderr);
           if (err) reject(new Error(stderr || err.message));
           else resolve();
         }
