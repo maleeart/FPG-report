@@ -269,9 +269,9 @@
         "row2": 107
       },
       "signature_approver": {
-        "col": 97,
+        "col": 103,
         "row": 106,
-        "col2": 110,
+        "col2": 116,
         "row2": 107
       }
     }
@@ -450,9 +450,9 @@
         "row2": 95
       },
       "signature_approver": {
-        "col": 97,
+        "col": 103,
         "row": 94,
-        "col2": 110,
+        "col2": 116,
         "row2": 95
       },
       "charge_voltage_cell": "BI65",
