@@ -71,39 +71,56 @@ function generalDatas(machineInfo, data) {
   const g  = data.generalData || {};
   const a  = data.afterRun    || {};
   const fp = machineInfo?.type === 'fire_pump';
+  const fuelBefore = v(g.fuelBefore, '');
+  const fuelAfter  = v(a.fuelAfter,  '');
+  const hrsBefore  = v(g.runningHoursBefore, '');
+  const hrsAfter   = v(a.runningHoursAfter, '');
   return `
-<table style="margin-bottom:4px">
+<table style="margin-bottom:4px;font-size:11px">
   <tr>
-    <td colspan="8" class="sec-hdr">General Datas</td>
+    <td colspan="9" style="font-weight:bold;padding:2px 4px">General Datas</td>
+    <td style="text-align:right;font-size:10px;white-space:nowrap;padding:2px 4px">Sheet 1/2</td>
   </tr>
   <tr>
-    <td style="font-weight:bold;width:90px">Location</td>
+    <td style="font-weight:bold;white-space:nowrap">Location</td>
     <td colspan="2">${v(machineInfo?.location_default)}</td>
-    <td style="font-weight:bold;width:60px">ชนิด</td>
-    <td style="width:70px">${fp ? 'Vertical' : 'Standby'}</td>
-    <td style="font-weight:bold;width:75px">Station No.</td>
-    <td colspan="2">${machineInfo?.label || ''}</td>
+    <td style="font-weight:bold">ชนิด</td>
+    <td>${fp ? 'Vertical' : 'Standby'}</td>
+    <td colspan="2" style="font-weight:bold">Station No.</td>
+    <td colspan="3">${machineInfo?.label || ''}</td>
   </tr>
   <tr>
     <td style="font-weight:bold">Model</td>
     <td>${v(machineInfo?.model_default)}</td>
-    <td style="font-weight:bold">Serial No.</td>
+    <td style="font-weight:bold;white-space:nowrap">Serial-Number</td>
     <td colspan="2">${v(machineInfo?.serial_default)}</td>
     <td style="font-weight:bold">MFG</td>
     <td>${v(machineInfo?.mfg_default)}</td>
-    <td>${v(machineInfo?.rpm_rating_default)} RPM</td>
+    <td style="font-weight:bold;white-space:nowrap">RPM Rating</td>
+    <td colspan="2">${v(machineInfo?.rpm_rating_default)}</td>
   </tr>
   <tr>
-    <td style="font-weight:bold">Fuel Level</td>
-    <td colspan="3">Before: ${v(g.fuelBefore)} L &nbsp;/&nbsp; After: ${v(a.fuelAfter)} L</td>
-    <td style="font-weight:bold">ชั่วโมงทำงาน</td>
-    <td colspan="3">Before: ${v(g.runningHoursBefore)} / After: ${v(a.runningHoursAfter)} Hrs.</td>
+    <td colspan="2" style="font-weight:bold;white-space:nowrap">Qty. Of Fuel Liquid</td>
+    <td colspan="2" style="text-align:center;white-space:nowrap">
+      ( ) Gal &nbsp; ( ✓ ) Lit &nbsp; ( ) kg
+    </td>
+    <td style="font-weight:bold;white-space:nowrap">Fuel Level</td>
+    <td style="white-space:nowrap">(Before)&nbsp; ${fuelBefore}</td>
+    <td style="text-align:center">/</td>
+    <td style="white-space:nowrap">(After)&nbsp; ${fuelAfter}</td>
+    <td colspan="2">Liters</td>
   </tr>
   <tr>
-    <td style="font-weight:bold">ระยะเวลาทดสอบ</td>
-    <td colspan="3">${v(g.runDurationMins)} นาที${fp ? '' : ' &nbsp;|&nbsp; จำนวนครั้ง: ' + v(g.runCount) + ' ครั้ง'}</td>
-    <td style="font-weight:bold">วันที่ตรวจสอบ</td>
-    <td colspan="3">${data.inspectionDate || '–'}</td>
+    <td style="font-weight:bold;white-space:nowrap">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
+    <td style="text-align:center">${v(g.runDurationMins, '')}</td>
+    <td style="white-space:nowrap">mins.</td>
+    <td style="font-weight:bold;white-space:nowrap">${fp ? 'ความจุถังเชื้อเพลิง' : 'จำนวนครั้งที่ทำงาน'}</td>
+    <td style="text-align:center">${fp ? '' : v(g.runCount, '')}</td>
+    <td style="white-space:nowrap">${fp ? 'Liters' : 'ครั้ง'}</td>
+    <td style="font-weight:bold;white-space:nowrap">ชั่วโมงการทำงาน</td>
+    <td style="white-space:nowrap">(Before)&nbsp; ${hrsBefore}</td>
+    <td style="text-align:center">/</td>
+    <td style="white-space:nowrap">(After)&nbsp; ${hrsAfter}&nbsp; Hrs.</td>
   </tr>
 </table>`;
 }
@@ -147,7 +164,7 @@ function machinePhotos(imgB64List) {
   for (let i = 0; i < padded.length; i += COLS) {
     const rowCells = padded.slice(i, i + COLS).map(b64 =>
       b64
-        ? `<td class="photo-cell" style="width:${100/COLS}%"><img src="data:image/jpeg;base64,${b64}" style="width:100%;height:auto;display:block;" /></td>`
+        ? `<td class="photo-cell" style="width:${100/COLS}%"><img src="data:image/jpeg;base64,${b64}" style="width:100%;max-height:80px;object-fit:contain;display:block;" /></td>`
         : `<td class="photo-cell" style="width:${100/COLS}%"></td>`
     ).join('');
     photoRows += `<tr>${rowCells}</tr>`;
