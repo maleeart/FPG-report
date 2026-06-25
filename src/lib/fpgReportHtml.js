@@ -163,21 +163,30 @@ function measureRows(pairs) {
   return `<table>${rows}</table>`;
 }
 
-function sheet1(machineInfo, data, logoB64) {
+function machinePhotos(imgB64List) {
+  if (!imgB64List || imgB64List.length === 0) return '';
+  const imgs = imgB64List.map(b64 =>
+    `<img src="data:image/jpeg;base64,${b64}" style="width:120px;height:90px;object-fit:cover;border:1px solid #ccc;margin:2px;" />`
+  ).join('');
+  return `<div style="margin-top:6px;"><b>รูปประกอบเครื่อง</b><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">${imgs}</div></div>`;
+}
+
+function sheet1(machineInfo, data, logoB64, imgB64List) {
   const isFp = machineInfo?.type === 'fire_pump';
-  const tmpl = isFp ? fieldMap.firepump_template : fieldMap.generator_template;
+  const tmpl = isFp ? fieldMap.fire_pump_template : fieldMap.generator_template;
   const items0 = tmpl?.sheet_visual_fields?.checklist_0_items || [];
   return `
 <div class="page">
   ${header(machineInfo, data, logoB64, 'Sheet 1/2')}
   ${generalDatas(machineInfo, data)}
   ${checklist0(items0, data.preVisual || [])}
+  ${machinePhotos(imgB64List)}
 </div>`;
 }
 
 function sheet2(machineInfo, data, logoB64, approverSigB64) {
   const isFp = machineInfo?.type === 'fire_pump';
-  const tmpl = isFp ? fieldMap.firepump_template : fieldMap.generator_template;
+  const tmpl = isFp ? fieldMap.fire_pump_template : fieldMap.generator_template;
   const items1 = tmpl?.sheet_data_fields?.checklist_1_items || [];
   const r = data.readings || {};
   const t = data.testRun  || {};
@@ -273,13 +282,14 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
 /**
  * สร้าง HTML ครบทุกเครื่องในวันนั้น — records = { machineId: data, ... }
  */
-export function generateFpgReportHtml(records, logoB64, approverSigB64) {
+export function generateFpgReportHtml(records, logoB64, approverSigB64, machineImages = {}) {
   const pages = [];
   for (const [machineId, data] of Object.entries(records)) {
     if (!data) continue;
     const machineInfo = (fieldMap.machines || []).find(m => m.id === machineId)
       || { id: machineId, type: machineId.startsWith('generator') ? 'generator' : 'fire_pump' };
-    pages.push(sheet1(machineInfo, data, logoB64));
+    const imgList = machineImages?.[machineId] || [];
+    pages.push(sheet1(machineInfo, data, logoB64, imgList));
     pages.push(sheet2(machineInfo, data, logoB64, approverSigB64));
   }
   return `<!DOCTYPE html>

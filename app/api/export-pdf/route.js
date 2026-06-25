@@ -46,8 +46,17 @@ export async function POST(request) {
     const logoBase64 = readBase64(path.join(process.cwd(), 'public/assets/shared/egat-logo.jpg'));
     const approverSigBase64 = readBase64(path.join(process.cwd(), 'public/assets/shared/signature-approver.png'));
 
+    // โหลดรูปประกอบแต่ละเครื่อง
+    const machineImages = {};
+    for (const m of fieldMap.machines || []) {
+      const imgs = (m.image_files || []).map(fname =>
+        readBase64(path.join(process.cwd(), `public/${m.image_dir}/${fname}`))
+      ).filter(Boolean);
+      if (imgs.length > 0) machineImages[m.id] = imgs;
+    }
+
     // Generate HTML ทุกเครื่องในวันนั้น (records = { machineId: data, ... })
-    const html = generateFpgReportHtml(records, logoBase64, approverSigBase64);
+    const html = generateFpgReportHtml(records, logoBase64, approverSigBase64, machineImages);
 
     // ส่ง HTML ไปแปลงเป็น PDF ที่ Railway (puppeteer)
     const convertRes = await fetch(`${loUrl.replace(/\/$/, '')}/convert-html`, {
