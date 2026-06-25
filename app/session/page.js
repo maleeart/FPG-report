@@ -506,7 +506,7 @@ function TestRunStep({ data, setData, isGen }) {
 }
 
 function AfterRunStep({ data, setData, isGen, conclusionDefault, isVeryLast, machines, records }) {
-  const a = data.afterRun || {};
+  const a = { approvedBy: 'ตวงเพชร ชัยยานนท์', ...data.afterRun };
   const upd = p => setData({ ...data, afterRun: { ...a, ...p } });
   const conclusionVal = a.conclusionText || conclusionDefault;
   return (
