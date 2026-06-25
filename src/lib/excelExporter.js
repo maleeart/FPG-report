@@ -237,29 +237,19 @@ async function writeMachineData(wb, data) {
   }
 
   // ────────────────────────────────────────────────────────────
-  // ลายเซ็นผู้อนุมัติ — วางรูปทับตรงชื่อ "ตวงเพชร ชัยยานนท์"
-  //   ใช้ approver_name_cell (CY106/CY94) เป็นจุดศูนย์กลาง
-  //   ขยายซ้าย-ขวา-บน ให้ภาพลายเซ็นมีขนาดพอเหมาะ
-  //   ไม่เขียน text ซ้ำ — ปล่อยชื่อใน template ไว้เดิม
+  // ลายเซ็นผู้อนุมัติ — ใช้ signature_approver range จาก field-map ตรงๆ
+  //   (col/row เป็น 1-indexed ใน field-map → ลบ 1 สำหรับ ExcelJS)
   // ────────────────────────────────────────────────────────────
-  if (df.approver_name_cell) {
+  if (df.signature_approver) {
     try {
       const fs = require('fs');
       const sigPath = path.join(process.cwd(), 'public', 'assets', 'shared', 'signature-approver.png');
       const sigBuf = fs.readFileSync(sigPath);
       const imgId = wb.addImage({ buffer: sigBuf, extension: 'png' });
-
-      // แปลง approver_name_cell → col, row (1-indexed)
-      const nameRef = df.approver_name_cell;
-      const m = nameRef.match(/^([A-Z]+)(\d+)$/);
-      let nameCol = 0;
-      for (const ch of m[1]) nameCol = nameCol * 26 + (ch.charCodeAt(0) - 64);
-      const nameRow = parseInt(m[2]);
-
-      // วางลายเซ็นทับตรงชื่อ: กว้าง ±8 col, สูง 2 row (row-2 ถึง row)
+      const s = df.signature_approver;
       ws2.addImage(imgId, {
-        tl: { col: nameCol - 9, row: nameRow - 3 },  // 0-indexed: ซ้าย 8 col, บน 2 row
-        br: { col: nameCol + 7, row: nameRow },       // 0-indexed: ขวา 7 col, ล่างสุดที่ชื่อ
+        tl: { col: s.col  - 1, row: s.row  - 1 },
+        br: { col: s.col2 - 1, row: s.row2 - 1 },
         editAs: 'twoCell',
       });
     } catch (e) { console.warn('approver signature image error:', e.message); }
