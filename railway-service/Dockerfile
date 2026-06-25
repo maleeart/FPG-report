@@ -2,17 +2,19 @@ FROM node:20-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      libreoffice \
-      python3 \
-      python3-uno \
+      chromium \
       fonts-thai-tlwg \
       fonts-noto-cjk \
+      ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
 COPY package.json .
 RUN npm install --omit=dev
-COPY server.js convert.py ./
+COPY server.js ./
 
 EXPOSE 3001
 CMD ["node", "server.js"]

@@ -1,55 +1,48 @@
 const express = require('express');
-const { exec } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const puppeteer = require('puppeteer');
 const os = require('os');
 
 const app = express();
 
-// รับ xlsx binary สูงสุด 50MB
-app.use(express.raw({ type: 'application/octet-stream', limit: '50mb' }));
+app.use(express.json({ limit: '10mb' }));
 
-app.get('/', (_req, res) => res.send('LibreOffice PDF Converter - OK'));
+app.get('/', (_req, res) => res.send('PDF Service (puppeteer) - OK'));
 
-app.post('/convert', async (req, res) => {
-  if (!req.body || req.body.length === 0) {
-    return res.status(400).json({ error: 'ไม่ได้รับไฟล์ xlsx' });
-  }
+app.post('/convert-html', async (req, res) => {
+  const { html } = req.body;
+  if (!html) return res.status(400).json({ error: 'ไม่ได้รับ html' });
 
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lo-'));
-  const xlsxPath = path.join(tmpDir, 'input.xlsx');
-  const pdfPath  = path.join(tmpDir, 'input.pdf');
-
+  let browser;
   try {
-    fs.writeFileSync(xlsxPath, req.body);
-
-    await new Promise((resolve, reject) => {
-      exec(
-        `python3 /app/convert.py "${xlsxPath}" "${pdfPath}"`,
-        { timeout: 90000 },
-        (err, stdout, stderr) => {
-          if (stdout) console.log('[convert.py stdout]\n' + stdout);
-          if (stderr) console.log('[convert.py stderr]\n' + stderr);
-          if (err) reject(new Error(stderr || err.message));
-          else resolve();
-        }
-      );
+    browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+      headless: true,
     });
 
-    if (!fs.existsSync(pdfPath)) {
-      throw new Error('convert.py ไม่ได้สร้างไฟล์ PDF');
-    }
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
 
-    const pdf = fs.readFileSync(pdfPath);
+    const pdfBuf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' },
+    });
+
     res.setHeader('Content-Type', 'application/pdf');
-    res.send(pdf);
+    res.send(pdfBuf);
   } catch (e) {
-    console.error('convert error:', e.message);
+    console.error('puppeteer error:', e.message);
     res.status(500).json({ error: e.message });
   } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    if (browser) await browser.close().catch(() => {});
   }
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`LibreOffice service listening on port ${PORT}`));
+app.listen(PORT, () => console.log(`PDF service listening on port ${PORT}`));
