@@ -13,71 +13,81 @@ const CSS = `
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'TH SarabunPSK','Sarabun','Angsana New',sans-serif;
-  font-size: 13px; color: #000; background: #fff;
+  font-size: 11.5px; color: #000; background: #fff;
 }
 .page {
   width: 210mm; min-height: 297mm;
-  padding: 10mm 12mm;
+  padding: 8mm 10mm;
   page-break-after: always;
+  page-break-inside: avoid;
 }
 table { border-collapse: collapse; width: 100%; }
-td, th { border: 1px solid #000; padding: 3px 5px; vertical-align: middle; font-size: 13px; }
-.nb { border: none !important; }
-.chk { text-align: center; width: 36px; font-size: 16px; }
-.sec {
-  background: #c6efce; font-weight: bold;
-  padding: 3px 6px; border: 1px solid #000;
-  margin: 6px 0 0;
+td, th {
+  border: 1px solid #000;
+  padding: 2px 4px;
+  vertical-align: middle;
+  font-size: 11.5px;
 }
-.sub { background: #f2f2f2; font-weight: bold; padding: 2px 5px; border: 1px solid #000; border-top: none; }
-.thead-row { background: #f2f2f2; }
+.no-border { border: none !important; }
+.chk { text-align: center; width: 32px; font-size: 14px; }
+.sec-hdr {
+  background: #c6efce; font-weight: bold; font-size: 12px;
+  padding: 2px 5px;
+}
+.sub-hdr { background: #f2f2f2; font-weight: bold; }
+.thead-row { background: #dce6f1; }
+.num-col { text-align: center; width: 24px; }
+.val-col { text-align: center; width: 80px; }
+.photo-cell { text-align: center; padding: 3px; border: 1px solid #000; }
 @page { size: A4 portrait; margin: 0; }
-@media print { .page { padding: 10mm 12mm; } }
+@media print { .page { padding: 8mm 10mm; } }
 `;
 
+/* ---- header ---- */
 function header(machineInfo, data, logoB64, sheet) {
   const title = machineInfo?.type === 'fire_pump'
     ? 'INSPECTION REPORT OF FIRE PUMP'
     : 'INSPECTION REPORT OF GENERATOR';
   const logo = logoB64
-    ? `<img src="data:image/jpeg;base64,${logoB64}" style="height:52px">`
+    ? `<img src="data:image/jpeg;base64,${logoB64}" style="height:48px">`
     : '';
   return `
-<table style="margin-bottom:8px">
+<table style="margin-bottom:5px">
   <tr>
-    <td class="nb" style="width:110px">${logo}</td>
-    <td class="nb" style="text-align:center">
-      <div>Electricity Generating Authority of Thailand</div>
-      <div>การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย</div>
-      <div style="font-size:16px;font-weight:bold">${title}</div>
-      <div>สำนักงาน ไทรน้อย</div>
+    <td class="no-border" style="width:100px">${logo}</td>
+    <td class="no-border" style="text-align:center">
+      <div style="font-size:11px">Electricity Generating Authority of Thailand</div>
+      <div style="font-size:11px">การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย</div>
+      <div style="font-size:15px;font-weight:bold">${title}</div>
+      <div style="font-size:11px">สำนักงาน ไทรน้อย</div>
     </td>
-    <td class="nb" style="text-align:right;vertical-align:top;white-space:nowrap">${sheet}</td>
+    <td class="no-border" style="text-align:right;vertical-align:top;white-space:nowrap;font-weight:bold">${sheet}</td>
   </tr>
 </table>`;
 }
 
+/* ---- general data ---- */
 function generalDatas(machineInfo, data) {
   const g  = data.generalData || {};
   const a  = data.afterRun    || {};
   const fp = machineInfo?.type === 'fire_pump';
   return `
-<table style="margin-bottom:6px">
+<table style="margin-bottom:4px">
   <tr>
-    <td colspan="8" style="font-weight:bold;background:#dce6f1">General Datas</td>
+    <td colspan="8" class="sec-hdr">General Datas</td>
   </tr>
   <tr>
-    <td style="width:100px;font-weight:bold">Location</td>
+    <td style="font-weight:bold;width:90px">Location</td>
     <td colspan="2">${v(machineInfo?.location_default)}</td>
-    <td style="font-weight:bold">ชนิด</td>
-    <td>${fp ? 'Vertical' : 'Standby'}</td>
-    <td style="font-weight:bold">Station No.</td>
+    <td style="font-weight:bold;width:60px">ชนิด</td>
+    <td style="width:70px">${fp ? 'Vertical' : 'Standby'}</td>
+    <td style="font-weight:bold;width:75px">Station No.</td>
     <td colspan="2">${machineInfo?.label || ''}</td>
   </tr>
   <tr>
     <td style="font-weight:bold">Model</td>
     <td>${v(machineInfo?.model_default)}</td>
-    <td style="font-weight:bold">Serial-Number</td>
+    <td style="font-weight:bold">Serial No.</td>
     <td colspan="2">${v(machineInfo?.serial_default)}</td>
     <td style="font-weight:bold">MFG</td>
     <td>${v(machineInfo?.mfg_default)}</td>
@@ -91,86 +101,79 @@ function generalDatas(machineInfo, data) {
   </tr>
   <tr>
     <td style="font-weight:bold">ระยะเวลาทดสอบ</td>
-    <td colspan="3">${v(g.runDurationMins)} นาที${fp ? '' : ' &nbsp; | &nbsp; จำนวนครั้ง: ' + v(g.runCount) + ' ครั้ง'}</td>
+    <td colspan="3">${v(g.runDurationMins)} นาที${fp ? '' : ' &nbsp;|&nbsp; จำนวนครั้ง: ' + v(g.runCount) + ' ครั้ง'}</td>
     <td style="font-weight:bold">วันที่ตรวจสอบ</td>
-    <td colspan="3">${data.inspectionDate || ''}</td>
+    <td colspan="3">${data.inspectionDate || '–'}</td>
   </tr>
 </table>`;
 }
 
+/* ---- checklist 0: Pre Visual Inspection ---- */
 function checklist0(items, results) {
-  let rows = '';
-  items.forEach((item, i) => {
+  const rows = items.map((item, i) => {
     const r = results[i] || {};
-    rows += `<tr>
-      <td style="text-align:center;width:28px">${i + 1}</td>
+    return `<tr>
+      <td class="num-col">${i + 1}</td>
       <td>${item.text}</td>
       <td class="chk">${passBox(r.result)}</td>
       <td class="chk">${failBox(r.result)}</td>
-      <td>${r.remark || ''}</td>
+      <td style="width:90px">${r.remark || ''}</td>
     </tr>`;
-  });
+  }).join('');
   return `
-<div class="sec">0.Pre Visual Inspection</div>
-<table>
-  <thead>
-    <tr class="thead-row">
-      <th colspan="2" style="text-align:center">รายการตรวจสอบ</th>
-      <th class="chk">ผ่าน</th>
-      <th class="chk">ไม่ผ่าน</th>
-      <th>หมายเหตุ</th>
-    </tr>
-  </thead>
-  <tbody>${rows}</tbody>
+<table style="margin-bottom:4px">
+  <tr>
+    <td colspan="5" class="sec-hdr">0. Pre Visual Inspection</td>
+  </tr>
+  <tr class="thead-row">
+    <th class="num-col">#</th>
+    <th style="text-align:left">รายการตรวจสอบ</th>
+    <th class="chk">ผ่าน</th>
+    <th class="chk">ไม่ผ่าน</th>
+    <th>หมายเหตุ</th>
+  </tr>
+  ${rows}
 </table>`;
 }
 
-function checklist1(items, results) {
-  let rows = '';
-  items.forEach((item, i) => {
-    const r = results[i] || {};
-    rows += `<tr>
-      <td style="text-align:center;width:28px">${i + 1}</td>
-      <td>${item.text}</td>
-      <td class="chk">${normBox(r.result)}</td>
-      <td class="chk">${abnBox(r.result)}</td>
-      <td class="chk">${noneBox(r.result)}</td>
-      <td>${r.remark || ''}</td>
-    </tr>`;
-  });
-  return `
-<div class="sec">1.Pre-Run Visual Inspection</div>
-<table>
-  <thead>
-    <tr class="thead-row">
-      <th style="width:28px">#</th>
-      <th>รายการตรวจสอบ</th>
-      <th class="chk">ปกติ</th>
-      <th class="chk">ผิดปกติ</th>
-      <th class="chk">ไม่มี</th>
-      <th>หมายเหตุ</th>
-    </tr>
-  </thead>
-  <tbody>${rows}</tbody>
-</table>`;
-}
-
-function measureRows(pairs) {
-  let rows = '';
-  pairs.forEach(([label, val]) => {
-    rows += `<tr><td style="width:300px">${label}</td><td>${val}</td></tr>`;
-  });
-  return `<table>${rows}</table>`;
-}
-
+/* ---- machine photos ---- */
 function machinePhotos(imgB64List) {
   if (!imgB64List || imgB64List.length === 0) return '';
-  const imgs = imgB64List.map(b64 =>
-    `<img src="data:image/jpeg;base64,${b64}" style="width:120px;height:90px;object-fit:cover;border:1px solid #ccc;margin:2px;" />`
-  ).join('');
-  return `<div style="margin-top:6px;"><b>รูปประกอบเครื่อง</b><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">${imgs}</div></div>`;
+  const COLS = 4;
+  let cells = '';
+  imgB64List.forEach(b64 => {
+    cells += `<td class="photo-cell" style="width:${100/COLS}%">
+      <img src="data:image/jpeg;base64,${b64}" style="width:100%;height:72px;object-fit:cover;display:block;" />
+    </td>`;
+  });
+  // pad to full row
+  const rem = imgB64List.length % COLS;
+  if (rem !== 0) {
+    for (let i = 0; i < COLS - rem; i++) {
+      cells += `<td class="photo-cell" style="width:${100/COLS}%"></td>`;
+    }
+  }
+  // group into rows of COLS
+  const imgs = imgB64List.concat(Array(rem ? COLS - rem : 0).fill(null));
+  let photoRows = '';
+  for (let i = 0; i < imgs.length; i += COLS) {
+    const rowCells = imgs.slice(i, i + COLS).map(b64 =>
+      b64
+        ? `<td class="photo-cell" style="width:${100/COLS}%"><img src="data:image/jpeg;base64,${b64}" style="width:100%;height:72px;object-fit:cover;display:block;" /></td>`
+        : `<td class="photo-cell" style="width:${100/COLS}%"></td>`
+    ).join('');
+    photoRows += `<tr>${rowCells}</tr>`;
+  }
+  return `
+<table>
+  <tr>
+    <td colspan="${COLS}" class="sec-hdr">รูปประกอบเครื่อง</td>
+  </tr>
+  ${photoRows}
+</table>`;
 }
 
+/* ---- PAGE 1 ---- */
 function sheet1(machineInfo, data, logoB64, imgB64List) {
   const isFp = machineInfo?.type === 'fire_pump';
   const tmpl = isFp ? fieldMap.fire_pump_template : fieldMap.generator_template;
@@ -184,6 +187,49 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
 </div>`;
 }
 
+/* ---- checklist 1: Pre-Run Visual Inspection ---- */
+function checklist1(items, results) {
+  const rows = items.map((item, i) => {
+    const r = results[i] || {};
+    return `<tr>
+      <td class="num-col">${i + 1}</td>
+      <td>${item.text}</td>
+      <td class="chk">${normBox(r.result)}</td>
+      <td class="chk">${abnBox(r.result)}</td>
+      <td class="chk">${noneBox(r.result)}</td>
+      <td style="width:90px">${r.remark || ''}</td>
+    </tr>`;
+  }).join('');
+  return `
+<table style="margin-bottom:4px">
+  <tr>
+    <td colspan="6" class="sec-hdr">1. Pre-Run Visual Inspection</td>
+  </tr>
+  <tr class="thead-row">
+    <th class="num-col">#</th>
+    <th style="text-align:left">รายการตรวจสอบ</th>
+    <th class="chk">ปกติ</th>
+    <th class="chk">ผิดปกติ</th>
+    <th class="chk">ไม่มี</th>
+    <th>หมายเหตุ</th>
+  </tr>
+  ${rows}
+</table>`;
+}
+
+/* ---- section 2 & 3: measurements as one table each ---- */
+function measureTable(secTitle, pairs) {
+  const rows = pairs.map(([label, val]) =>
+    `<tr><td>${label}</td><td class="val-col">${val}</td></tr>`
+  ).join('');
+  return `
+<table style="margin-bottom:4px">
+  <tr><td colspan="2" class="sec-hdr">${secTitle}</td></tr>
+  ${rows}
+</table>`;
+}
+
+/* ---- PAGE 2 ---- */
 function sheet2(machineInfo, data, logoB64, approverSigB64) {
   const isFp = machineInfo?.type === 'fire_pump';
   const tmpl = isFp ? fieldMap.fire_pump_template : fieldMap.generator_template;
@@ -199,24 +245,24 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
   const jp   = r.jockeyPump  || {};
   const elec = r.electrical  || {};
 
-  const measuresFp = [
+  const sec2fp = [
     ['ความดันน้ำในระบบก่อนเดินเครื่อง (Psi)', v(r.waterPressure)],
     ['แรงดันแบตเตอรี่ Battery #1 (Volt)', v(r.battery1Voltage)],
     ['แรงดันแบตเตอรี่ Battery #2 (Volt)', v(r.battery2Voltage)],
     ['แรงดัน Jockey Pump L1-L2 / L2-L3 / L1-L3 (V)',
-      v(jp.voltageL1L2) + ' / ' + v(jp.voltageL2L3) + ' / ' + v(jp.voltageL1L3)],
+      `${v(jp.voltageL1L2)} / ${v(jp.voltageL2L3)} / ${v(jp.voltageL1L3)}`],
     ['กระแส Jockey Pump L1 / L2 / L3 (A)',
-      v(jp.currentL1) + ' / ' + v(jp.currentL2) + ' / ' + v(jp.currentL3)],
+      `${v(jp.currentL1)} / ${v(jp.currentL2)} / ${v(jp.currentL3)}`],
   ];
-  const measuresGen = [
+  const sec2gen = [
     ['แรงดันแบตเตอรี่ (Volt)', v(r.batteryVoltage)],
     ['ค่าแรงดัน Off Load L1-N / L2-N / L3-N (V)',
-      v(elec.offload_L1N) + ' / ' + v(elec.offload_L2N) + ' / ' + v(elec.offload_L3N)],
+      `${v(elec.offload_L1N)} / ${v(elec.offload_L2N)} / ${v(elec.offload_L3N)}`],
     ['ค่าแรงดัน Off Load L1-L2 / L2-L3 / L1-L3 (V)',
-      v(elec.offload_L1L2) + ' / ' + v(elec.offload_L2L3) + ' / ' + v(elec.offload_L1L3)],
+      `${v(elec.offload_L1L2)} / ${v(elec.offload_L2L3)} / ${v(elec.offload_L1L3)}`],
   ];
 
-  const testFp = [
+  const sec3fp = [
     ['ความเร็วรอบ (RPM)', v(t.rpm)],
     ['แรงดันน้ำมันเครื่อง (Psi)', v(t.oilPressure)],
     ['อุณหภูมิน้ำหล่อเย็น (°C)', v(t.coolantTemp)],
@@ -224,7 +270,7 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
     ['แรงดันน้ำในระบบขณะเดิน (Psi)', v(t.systemPressure)],
     ['อัตราการใช้เชื้อเพลิง (Liters)', v(t.fuelConsumption)],
   ];
-  const testGen = [
+  const sec3gen = [
     ['ความเร็วรอบ (RPM)', v(t.rpm)],
     ['แรงดันน้ำมันเครื่อง (Psi)', v(t.oilPressure)],
     ['อุณหภูมิน้ำหล่อเย็น (°C)', v(t.coolantTemp)],
@@ -235,42 +281,51 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
   ];
 
   const approverImg = approverSigB64
-    ? `<img src="data:image/png;base64,${approverSigB64}" style="height:40px">`
+    ? `<img src="data:image/png;base64,${approverSigB64}" style="height:36px;display:block;margin:0 auto 2px">`
     : '';
-
   const inspDate = data.inspectionDate || '–';
 
   return `
 <div class="page">
   ${header(machineInfo, data, logoB64, 'Sheet 2/2')}
+
   ${checklist1(items1, data.preRunVisual || [])}
 
-  <div class="sec">2.ค่าที่บันทึกได้ก่อนเดินเครื่อง</div>
-  ${measureRows(isFp ? measuresFp : measuresGen)}
-
-  <div class="sec">3.ค่าที่บันทึกได้ขณะเดินเครื่อง (Test Run)</div>
-  ${measureRows(isFp ? testFp : testGen)}
-
-  <div class="sec">4.หมายเหตุ / ข้อสังเกต</div>
-  <div style="border:1px solid #000;padding:6px;min-height:42px;white-space:pre-line">${a.comment || ''}</div>
-
-  <div class="sec">5.สรุปผลการตรวจสอบ</div>
-  <div style="border:1px solid #000;padding:6px;min-height:32px;white-space:pre-line;margin-bottom:16px">${conclusion}</div>
-
-  <table style="margin-top:8px">
+  <table style="margin-bottom:4px">
     <tr>
-      <td class="nb" style="width:50%;text-align:center;padding-top:8px">
-        <div style="border-top:1px solid #000;padding-top:4px">
+      <td style="width:50%;vertical-align:top;border:none;padding:0 2px 0 0">
+        ${measureTable('2. ค่าที่บันทึกได้ก่อนเดินเครื่อง', isFp ? sec2fp : sec2gen)}
+      </td>
+      <td style="width:50%;vertical-align:top;border:none;padding:0 0 0 2px">
+        ${measureTable('3. ค่าที่บันทึกได้ขณะเดินเครื่อง (Test Run)', isFp ? sec3fp : sec3gen)}
+      </td>
+    </tr>
+  </table>
+
+  <table style="margin-bottom:4px">
+    <tr><td class="sec-hdr">4. หมายเหตุ / ข้อสังเกต</td></tr>
+    <tr><td style="min-height:34px;white-space:pre-line;padding:4px">${a.comment || ''}</td></tr>
+  </table>
+
+  <table style="margin-bottom:8px">
+    <tr><td class="sec-hdr">5. สรุปผลการตรวจสอบ</td></tr>
+    <tr><td style="min-height:28px;white-space:pre-line;padding:4px">${conclusion}</td></tr>
+  </table>
+
+  <table>
+    <tr>
+      <td class="no-border" style="width:50%;text-align:center">
+        <div style="border-top:1px solid #000;padding-top:4px;margin-top:8px">
           <div>ผู้ตรวจสอบ</div>
-          <div style="font-weight:bold;margin:4px 0">${a.inspectedBy || '( ................................ )'}</div>
+          <div style="font-weight:bold;margin:3px 0">${a.inspectedBy || '( ………………………………… )'}</div>
           <div>วันที่ ${inspDate}</div>
         </div>
       </td>
-      <td class="nb" style="width:50%;text-align:center;padding-top:8px">
-        <div style="border-top:1px solid #000;padding-top:4px">
+      <td class="no-border" style="width:50%;text-align:center">
+        <div style="border-top:1px solid #000;padding-top:4px;margin-top:8px">
           ${approverImg}
           <div>ผู้อนุมัติ</div>
-          <div style="font-weight:bold;margin:4px 0">${a.approvedBy || '( ................................ )'}</div>
+          <div style="font-weight:bold;margin:3px 0">${a.approvedBy || '( ………………………………… )'}</div>
           <div>วันที่ ${inspDate}</div>
         </div>
       </td>
