@@ -51,13 +51,13 @@ function clearAllYellowAllSheets(wb) {
   return total;
 }
 
-/** ตั้ง fitToPage ทุก sheet ใน workbook + reset scale เพื่อไม่ให้ template override */
+/** ตั้ง fitToPage ทุก sheet ใน workbook */
 function applyFitToPageAllSheets(wb) {
   wb.eachSheet((ws) => {
     ws.pageSetup.fitToPage   = true;
     ws.pageSetup.fitToWidth  = 1;
     ws.pageSetup.fitToHeight = 0;
-    ws.pageSetup.scale       = 100;
+    // ไม่ set scale — ExcelJS จะเขียน scale="100" ลง XML ทำให้ LibreOffice ใช้ scale แทน fitToPage
   });
 }
 
