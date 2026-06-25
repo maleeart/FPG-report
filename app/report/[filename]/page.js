@@ -109,14 +109,17 @@ function ReportInner() {
 
         /* ═══════════════ FORM ELEMENTS ═══════════════ */
         .form-header {
-          display: flex; justify-content: space-between; align-items: flex-start;
+          display: flex; justify-content: space-between; align-items: center;
           border-bottom: 2.5px solid #000; padding-bottom: 6pt; margin-bottom: 8pt;
+          gap: 8pt;
         }
-        .form-header-left { display: flex; flex-direction: column; gap: 2pt; }
+        .form-header-logo { height: 48pt; width: auto; object-fit: contain; flex-shrink: 0; }
+        @media print { .form-header-logo { height: 44pt !important; } }
+        .form-header-center { flex: 1; display: flex; flex-direction: column; gap: 2pt; text-align: center; }
         .form-org   { font-size: 8pt;  color: #000; font-weight: 600; }
         .form-title { font-size: 14pt; color: #000; font-weight: 900; line-height: 1.2; }
         .form-sub   { font-size: 9pt;  color: #000; }
-        .form-header-right { text-align: right; line-height: 1.8; }
+        .form-header-right { text-align: right; line-height: 1.8; flex-shrink: 0; }
         .form-date-label { font-size: 8pt;  color: #000; }
         .form-date-val   { font-size: 12pt; color: #000; font-weight: 800; }
 
@@ -155,13 +158,15 @@ function ReportInner() {
           font-size: 9pt; color: #000; white-space: pre-wrap; line-height: 1.6; margin-bottom: 6pt;
         }
         .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin-top: 6pt; }
-        .sig-box { border: 1px solid #444; padding: 5pt 8pt; text-align: center; min-height: 64pt; }
-        .sig-box-lbl  { font-size: 8pt;  color: #000; font-weight: 600; margin-bottom: 3pt; }
-        .sig-img      { max-height: 44pt; max-width: 100%; object-fit: contain; display: block; margin: 0 auto; }
-        .sig-blank    { height: 34pt; border-bottom: 1px solid #000; width: 68%; margin: 6pt auto 0; }
-        .sig-line     { border-top: 1px solid #888; width: 72%; margin: 5pt auto 3pt; }
-        .sig-name     { font-size: 9pt;  color: #000; font-weight: 700; }
-        .sig-role     { font-size: 8pt;  color: #000; }
+        .sig-box { border: 1px solid #444; padding: 5pt 8pt; text-align: center; }
+        .sig-box-lbl  { font-size: 8pt;  color: #000; font-weight: 600; margin-bottom: 2pt; }
+        .sig-img      { height: 48pt; max-width: 100%; object-fit: contain; display: block; margin: 0 auto; }
+        @media print { .sig-img { height: 44pt !important; } }
+        .sig-blank    { height: 48pt; width: 68%; margin: 0 auto; }
+        .sig-line     { border-top: 1.5px solid #000; width: 80%; margin: 4pt auto 3pt; }
+        .sig-name     { font-size: 9.5pt; color: #000; font-weight: 700; }
+        .sig-role     { font-size: 8pt;   color: #000; }
+        .sig-date     { font-size: 8pt;   color: #000; margin-top: 2pt; }
 
         /* ═══════════════ PHOTO PAGE ═══════════════ */
         .photo-header {
@@ -221,7 +226,8 @@ function FpgReport({ data, fieldMap }) {
 
               {/* header */}
               <div className="form-header">
-                <div className="form-header-left">
+                <img src="/assets/shared/egat-logo.jpg" alt="EGAT" className="form-header-logo" />
+                <div className="form-header-center">
                   <span className="form-org">การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย · สำนักงานไทรน้อย</span>
                   <span className="form-title">{machine.label_th || machine.label}</span>
                   <span className="form-sub">{machine.label} · {machine.location_default}</span>
@@ -373,22 +379,31 @@ function FpgReport({ data, fieldMap }) {
                   {afterRun.conclusionText || '–'}
                 </div>
                 <div className="sig-row">
+                  {/* ── Inspector ── */}
                   <div className="sig-box">
-                    <div className="sig-box-lbl">ลายเซ็นผู้ตรวจสอบ / Inspector</div>
+                    <div className="sig-box-lbl">ลายเซ็นผู้ตรวจสอบ / Inspector Signature</div>
                     {afterRun.inspectorSignature
-                      ? <img src={afterRun.inspectorSignature} alt="ลายเซ็น" className="sig-img" />
+                      ? <img src={afterRun.inspectorSignature} alt="ลายเซ็นผู้ตรวจ" className="sig-img" />
                       : <div className="sig-blank" />
                     }
                     <div className="sig-line" />
                     <div className="sig-name">{v(afterRun.inspectedBy)}</div>
-                    <div className="sig-role">ผู้ตรวจสอบ · {inspDate}</div>
+                    <div className="sig-role">ผู้ตรวจสอบ / Inspector</div>
+                    <div className="sig-date">วันที่ {inspDate}</div>
                   </div>
+                  {/* ── Approver (ใช้รูป default เสมอ) ── */}
                   <div className="sig-box">
-                    <div className="sig-box-lbl">ลายเซ็นผู้อนุมัติ / Approver</div>
-                    <div className="sig-blank" />
+                    <div className="sig-box-lbl">ลายเซ็นผู้อนุมัติ / Approver Signature</div>
+                    <img
+                      src="/assets/shared/signature-approver.png"
+                      alt="ลายเซ็นผู้อนุมัติ"
+                      className="sig-img"
+                      onError={e => { e.currentTarget.style.display = 'none'; }}
+                    />
                     <div className="sig-line" />
                     <div className="sig-name">{v(afterRun.approvedBy) !== '–' ? v(afterRun.approvedBy) : 'ตวงเพชร'}</div>
-                    <div className="sig-role">ผู้อนุมัติ</div>
+                    <div className="sig-role">ผู้อนุมัติ / Approver</div>
+                    <div className="sig-date">วันที่ {inspDate}</div>
                   </div>
                 </div>
               </div>
@@ -457,7 +472,8 @@ function ListReport({ data, fieldMap }) {
   return (
     <div className="a4-page">
       <div className="form-header">
-        <div className="form-header-left">
+        <img src="/assets/shared/egat-logo.jpg" alt="EGAT" className="form-header-logo" />
+        <div className="form-header-center">
           <span className="form-org">การไฟฟ้าฝ่ายผลิตแห่งประเทศไทย · สำนักงานไทรน้อย</span>
           <span className="form-title">{title}</span>
         </div>
