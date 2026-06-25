@@ -56,6 +56,7 @@ export default function FormPage() {
   const [devices, setDevices] = useState([makeDevice(cfg || FORM_CONFIG.emergency)]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [validationError, setValidationError] = useState(null);
   const draftRef = useRef(null);
 
   if (!cfg) return <main style={{ padding: 40 }}>ไม่รู้จักประเภทฟอร์มนี้</main>;
@@ -164,8 +165,20 @@ export default function FormPage() {
             onChange={v => setGeneral(g => ({ ...g, serial: v }))} placeholder="S/N" />
           <Field label="MFG" value={general.mfg}
             onChange={v => setGeneral(g => ({ ...g, mfg: v }))} placeholder="ผู้ผลิต" />
+          {validationError && <p className="validation-err">{validationError}</p>}
           <button className="btn-next" style={{ background: accentColor }}
-            onClick={() => setStep(1)}>
+            onClick={() => {
+              if (!general.inspector?.trim()) {
+                setValidationError('กรุณากรอกชื่อผู้ตรวจสอบก่อน');
+                return;
+              }
+              if (!general.building?.trim()) {
+                setValidationError('กรุณากรอกชื่ออาคารก่อน');
+                return;
+              }
+              setValidationError(null);
+              setStep(1);
+            }}>
             ถัดไป → ตรวจสอบอุปกรณ์
           </button>
         </section>
@@ -218,35 +231,67 @@ export default function FormPage() {
       )}
 
       {/* Step 2 — Confirm */}
-      {step === 2 && (
-        <section className="section confirm-section">
-          <div className="confirm-icon">{cfg.icon}</div>
-          <h2 className="confirm-title">{cfg.title}</h2>
-          <p className="confirm-sub">วันที่ {general.inspectionDate || date}</p>
-          <div className="confirm-stats">
-            <div className="stat">
-              <span className="stat-num">{devices.length}</span>
-              <span className="stat-label">อุปกรณ์</span>
+      {step === 2 && (() => {
+        const firstField = cfg.fields[0];
+        const passCount = devices.filter(d => d[firstField.key] === firstField.opts[0].v).length;
+        const failCount = devices.length - passCount;
+        const failDevices = devices.filter(d => d[firstField.key] !== firstField.opts[0].v);
+        return (
+          <section className="section confirm-section">
+            <div className="confirm-icon">{cfg.icon}</div>
+            <h2 className="confirm-title">{cfg.title}</h2>
+            <p className="confirm-sub">วันที่ {general.inspectionDate || date}</p>
+
+            {/* info summary */}
+            <div className="confirm-info">
+              <div className="ci-row"><span className="ci-key">ผู้ตรวจสอบ</span><span className="ci-val">{general.inspector || '–'}</span></div>
+              <div className="ci-row"><span className="ci-key">อาคาร / ชั้น</span><span className="ci-val">{[general.building, general.floor].filter(Boolean).join(' / ') || '–'}</span></div>
             </div>
-            <div className="stat">
-              <span className="stat-num">
-                {devices.filter(d => {
-                  const firstField = cfg.fields[0];
-                  return d[firstField.key] === firstField.opts[0].v;
-                }).length}
-              </span>
-              <span className="stat-label">ปกติ / ผ่าน</span>
+
+            <div className="confirm-stats">
+              <div className="stat">
+                <span className="stat-num">{devices.length}</span>
+                <span className="stat-label">อุปกรณ์ทั้งหมด</span>
+              </div>
+              <div className="stat stat--pass">
+                <span className="stat-num">{passCount}</span>
+                <span className="stat-label">ปกติ / ผ่าน</span>
+              </div>
+              {failCount > 0 && (
+                <div className="stat stat--fail">
+                  <span className="stat-num">{failCount}</span>
+                  <span className="stat-label">ไม่ผ่าน</span>
+                </div>
+              )}
             </div>
-          </div>
-          {submitError && <p className="error-msg">{submitError}</p>}
-          <button className="btn-submit" style={{ background: accentColor }}
-            disabled={submitting}
-            onClick={handleSubmit}>
-            {submitting ? '⏳ กำลังบันทึก...' : '✓ บันทึก + ดาวน์โหลด Excel'}
-          </button>
-          <button className="btn-back-edit" onClick={() => setStep(1)}>‹ แก้ไขรายการ</button>
-        </section>
-      )}
+
+            {failDevices.length > 0 && (
+              <div className="fail-list">
+                <div className="fail-list-title">⚠ รายการที่ไม่ผ่าน / ผิดปกติ</div>
+                {failDevices.map((d, i) => {
+                  const idVal = d[cfg.idKey];
+                  const badFields = cfg.fields.filter(f => f.opts[0].v !== d[f.key]);
+                  return (
+                    <div key={i} className="fail-item">
+                      <span className="fail-id">{idVal || `#${devices.indexOf(d) + 1}`}</span>
+                      <span className="fail-loc">{d.location || ''}</span>
+                      <span className="fail-fields">{badFields.map(f => f.label).join(', ')}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {submitError && <p className="error-msg">{submitError}</p>}
+            <button className="btn-submit" style={{ background: accentColor }}
+              disabled={submitting}
+              onClick={handleSubmit}>
+              {submitting ? '⏳ กำลังบันทึก...' : '✓ บันทึก + ดาวน์โหลด Excel'}
+            </button>
+            <button className="btn-back-edit" onClick={() => setStep(1)}>‹ แก้ไขรายการ</button>
+          </section>
+        );
+      })()}
 
       <style jsx>{`
         .root { min-height: 100dvh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; }
@@ -275,14 +320,33 @@ export default function FormPage() {
         .btn-submit:disabled { opacity: 0.6; }
         .btn-back-edit { padding: 12px; border-radius: 14px; border: 1px solid var(--border-strong); background: var(--bg-surface-raised); font-size: 14px; font-weight: 600; color: var(--ink-secondary); cursor: pointer; }
 
-        .confirm-section { align-items: center; justify-content: center; gap: 14px; padding-top: 48px; }
-        .confirm-icon { font-size: 64px; }
+        .confirm-section { align-items: center; gap: 12px; padding-top: 32px; }
+        .confirm-icon { font-size: 56px; }
         .confirm-title { font-size: 22px; font-weight: 800; color: var(--ink-primary); margin: 0; }
         .confirm-sub { font-size: 14px; color: var(--ink-muted); margin: 0; }
-        .confirm-stats { display: flex; gap: 32px; margin: 8px 0 16px; }
-        .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-        .stat-num { font-size: 32px; font-weight: 800; color: var(--ink-primary); line-height: 1; }
-        .stat-label { font-size: 12px; color: var(--ink-muted); }
+
+        .confirm-info { width: 100%; background: var(--bg-surface-raised); border: 1px solid var(--border-hairline); border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+        .ci-row { display: flex; justify-content: space-between; gap: 8px; }
+        .ci-key { font-size: 12px; color: var(--ink-muted); flex-shrink: 0; }
+        .ci-val { font-size: 12px; font-weight: 600; color: var(--ink-primary); text-align: right; }
+
+        .confirm-stats { display: flex; gap: 20px; margin: 4px 0 4px; }
+        .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 16px; border-radius: 12px; background: var(--bg-surface-raised); border: 1px solid var(--border-hairline); }
+        .stat--pass { background: var(--status-pass-bg); border-color: var(--status-pass); }
+        .stat--fail { background: var(--status-fail-bg); border-color: var(--status-fail); }
+        .stat-num { font-size: 28px; font-weight: 800; color: var(--ink-primary); line-height: 1; }
+        .stat--pass .stat-num { color: var(--status-pass); }
+        .stat--fail .stat-num { color: var(--status-fail); }
+        .stat-label { font-size: 11px; color: var(--ink-muted); }
+
+        .fail-list { width: 100%; background: var(--status-fail-bg); border: 1px solid var(--status-fail); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+        .fail-list-title { font-size: 12px; font-weight: 700; color: var(--status-fail); margin-bottom: 2px; }
+        .fail-item { display: flex; flex-direction: column; gap: 1px; padding: 6px 8px; background: rgba(255,255,255,0.5); border-radius: 8px; }
+        .fail-id { font-size: 13px; font-weight: 700; color: var(--ink-primary); }
+        .fail-loc { font-size: 11px; color: var(--ink-muted); }
+        .fail-fields { font-size: 11px; color: var(--status-fail); font-weight: 600; }
+
+        .validation-err { color: var(--status-fail); font-size: 13px; font-weight: 600; background: var(--status-fail-bg); border-radius: 8px; padding: 8px 12px; margin: 0; }
         .error-msg { color: #c03232; font-size: 13px; text-align: center; }
       `}</style>
     </div>

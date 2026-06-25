@@ -37,6 +37,7 @@ function SessionPageInner() {
   const [stepIdx, setStepIdx] = useState(0);
   const [submitState, setSubmitState] = useState('idle');
   const [submitError, setSubmitError] = useState(null);
+  const [validationError, setValidationError] = useState(null);
   const [sessionDate, setSessionDate] = useState(date);
   const saveTimerRef = useRef(null);
 
@@ -109,8 +110,21 @@ function SessionPageInner() {
   };
 
   const goNext = () => {
-    if (isVeryLast) { handleFinalSubmit(); return; }
+    setValidationError(null);
+    if (isVeryLast) {
+      const missing = machines.filter(m => !records[m.id]?.afterRun?.inspectedBy?.trim());
+      if (missing.length) {
+        setValidationError(`กรุณากรอกชื่อผู้ตรวจสอบของ: ${missing.map(m => m.label.replace('Fire Pump', 'FP').replace('Generator', 'GEN')).join(', ')}`);
+        return;
+      }
+      handleFinalSubmit();
+      return;
+    }
     if (isLastStep) {
+      if (!currentData.afterRun?.inspectedBy?.trim()) {
+        setValidationError('กรุณากรอกชื่อผู้ตรวจสอบก่อนไปเครื่องถัดไป');
+        return;
+      }
       setMachineIdx(i => i + 1);
       setStepIdx(0);
     } else {
@@ -245,11 +259,14 @@ function SessionPageInner() {
         {stepIdx === 5 && (
           <AfterRunStep
             data={currentData} setData={updateCurrentData}
-            isGen={isGen} conclusionDefault={conclusionDefault} />
+            isGen={isGen} conclusionDefault={conclusionDefault}
+            isVeryLast={isVeryLast} machines={machines} records={records} />
         )}
       </section>
 
-      {submitError && <p className="err-banner">{submitError}</p>}
+      {(validationError || submitError) && (
+        <p className="err-banner">{validationError || submitError}</p>
+      )}
 
       {/* Nav */}
       <nav className="nav">
@@ -488,12 +505,40 @@ function TestRunStep({ data, setData, isGen }) {
   );
 }
 
-function AfterRunStep({ data, setData, isGen, conclusionDefault }) {
+function AfterRunStep({ data, setData, isGen, conclusionDefault, isVeryLast, machines, records }) {
   const a = data.afterRun || {};
   const upd = p => setData({ ...data, afterRun: { ...a, ...p } });
   const conclusionVal = a.conclusionText || conclusionDefault;
   return (
     <div className="stack">
+      {isVeryLast && machines && records && (
+        <div className="summary-box">
+          <div className="summary-title">สรุปทุกเครื่อง</div>
+          {machines.map(m => {
+            const rec = records[m.id] || {};
+            const inspector = rec.afterRun?.inspectedBy?.trim();
+            const hasSig = !!rec.afterRun?.inspectorSignature;
+            const hrBefore = rec.generalData?.runningHoursBefore;
+            const hrAfter = rec.afterRun?.runningHoursAfter;
+            const ok = !!inspector;
+            return (
+              <div key={m.id} className={`summary-row ${ok ? 'summary-row--ok' : 'summary-row--warn'}`}>
+                <span className="summary-icon">{ok ? '✓' : '!'}</span>
+                <div className="summary-info">
+                  <span className="summary-machine">{m.label.replace('Fire Pump', 'FP').replace('Generator', 'GEN')}</span>
+                  {inspector
+                    ? <span className="summary-detail">ผู้ตรวจ: {inspector} {hasSig ? '· มีลายเซ็น' : '· ไม่มีลายเซ็น'}</span>
+                    : <span className="summary-warn-text">ยังไม่ได้กรอกชื่อผู้ตรวจสอบ</span>
+                  }
+                  {(hrBefore || hrAfter) && (
+                    <span className="summary-detail">Hrs: {hrBefore || '–'} → {hrAfter || '–'}</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div className="abox">
         <div className="abox-label">บันทึกค่าหลังทดสอบ</div>
         <div className="r2">
@@ -517,6 +562,18 @@ function AfterRunStep({ data, setData, isGen, conclusionDefault }) {
         .abox-label{font-size:11px;font-weight:700;color:var(--status-warn);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
         .r2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
         .r2>:global(*){min-width:0}
+        .summary-box{background:var(--bg-surface);border:1.5px solid var(--accent);border-radius:var(--radius-md);padding:12px;display:flex;flex-direction:column;gap:8px;}
+        .summary-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;}
+        .summary-row{display:flex;align-items:flex-start;gap:8px;padding:8px;border-radius:8px;}
+        .summary-row--ok{background:var(--status-pass-bg);}
+        .summary-row--warn{background:var(--status-fail-bg);}
+        .summary-icon{font-size:14px;font-weight:700;flex-shrink:0;margin-top:1px;}
+        .summary-row--ok .summary-icon{color:var(--status-pass);}
+        .summary-row--warn .summary-icon{color:var(--status-fail);}
+        .summary-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+        .summary-machine{font-size:13px;font-weight:700;color:var(--ink-primary);}
+        .summary-detail{font-size:11px;color:var(--ink-muted);}
+        .summary-warn-text{font-size:11px;color:var(--status-fail);font-weight:600;}
       `}</style>
     </div>
   );
