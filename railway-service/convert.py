@@ -18,11 +18,11 @@ def fix_and_convert(input_path, output_path):
     # 1. Fix page setup: ลบ scale, ตั้ง fitToPage + fitToWidth=1
     wb = load_workbook(input_path)
     for ws in wb.worksheets:
-        ps = ws.page_setup
-        ps.fitToPage = True
-        ps.fitToWidth = 1
-        ps.fitToHeight = 0
-        ps.scale = None   # ลบ scale ออกเพื่อให้ LibreOffice ใช้ fitToWidth แทน
+        # fitToPage อยู่ใน sheet_properties ไม่ใช่ page_setup
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        ws.page_setup.scale = None   # ลบ scale ออกเพื่อให้ LibreOffice ใช้ fitToWidth แทน
     wb.save(fixed_path)
     print(f'[convert] saved fixed xlsx: {fixed_path}', flush=True)
 
