@@ -9,9 +9,7 @@ const normBox = r => r === 'normal'   ? '☑' : '☐';
 const abnBox  = r => r === 'abnormal' ? '☑' : '☐';
 const noneBox = r => r === 'none'     ? '☑' : '☐';
 
-const FS = 'font-size:10.5px';
 const PAD = 'padding:1px 3px';
-const CELL = `${FS};${PAD};vertical-align:middle`;
 
 const CSS = `
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,7 +45,7 @@ function header(machineInfo, data, logoB64, sheet) {
 </table>`;
 }
 
-/* ─── PAGE 1: ตารางเดียว General Datas + checklist 0 + รูป ─── */
+/* ─── PAGE 1: General Datas + checklist 0 + รูป ─── */
 function sheet1(machineInfo, data, logoB64, imgB64List) {
   const isFp   = machineInfo?.type === 'fire_pump';
   const tmpl   = isFp ? fieldMap.fire_pump_template : fieldMap.generator_template;
@@ -64,12 +62,6 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
   const tankLabel  = isFp ? 'ความจุถังเชื้อเพลิง' : 'จำนวนครั้งที่ทำงาน';
   const tankUnit   = isFp ? 'Liters' : 'ครั้ง';
 
-  /*
-    9 คอลัมน์:
-    1(13%) label  2(7%) val  3(9%) label  4(9%) val
-    5(9%)  label  6(7%) val  7(11%) label
-    8(7%)  ผ่าน   9(7%) ไม่ผ่าน  10(21%) หมายเหตุ
-  */
   const CG = `<colgroup>
     <col style="width:13%"><col style="width:7%"><col style="width:9%"><col style="width:9%">
     <col style="width:9%"><col style="width:7%"><col style="width:11%">
@@ -87,7 +79,7 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
     </tr>`;
   }).join('');
 
-  /* รูปประกอบ */
+  /* รูปประกอบ — 4 ต่อแถว */
   const COLS = 4;
   let photoRows = '';
   if (imgB64List?.length > 0) {
@@ -97,7 +89,7 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
     for (let i = 0; i < padded.length; i += COLS) {
       const cells = padded.slice(i, i + COLS).map(b64 =>
         b64
-          ? `<td style="padding:2px;border:1px solid #000;width:25%"><img src="data:image/jpeg;base64,${b64}" style="width:100%;max-height:105px;object-fit:contain;display:block;"></td>`
+          ? `<td style="padding:2px;border:1px solid #000;width:25%"><img src="data:image/jpeg;base64,${b64}" style="width:100%;max-height:130px;object-fit:contain;display:block;"></td>`
           : `<td style="border:1px solid #000;width:25%"></td>`
       ).join('');
       photoRows += `<tr>${cells}</tr>`;
@@ -174,8 +166,8 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
 
 /* ─── PAGE 2 ─── */
 function sheet2(machineInfo, data, logoB64, approverSigB64) {
-  const isFp  = machineInfo?.type === 'fire_pump';
-  const tmpl  = isFp ? fieldMap.fire_pump_template : fieldMap.generator_template;
+  const isFp = machineInfo?.type === 'fire_pump';
+  const tmpl = isFp ? fieldMap.fire_pump_template : fieldMap.generator_template;
   const items1 = tmpl?.sheet_data_fields?.checklist_1_items || [];
   const r = data.readings || {};
   const t = data.testRun  || {};
@@ -187,93 +179,108 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
     || (tmpl?.sheet_data_fields?.conclusion_default || []).join('\n');
   const inspDate = data.inspectionDate || '–';
 
-  /* checklist 1 */
-  const chk1Rows = items1.map((item, i) => {
-    const res = (data.preRunVisual || [])[i] || {};
-    return `<tr>
-      <td class="val">${i + 1}</td>
-      <td>${item.text}</td>
-      <td class="chk val">${normBox(res.result)}</td>
-      <td class="chk val">${abnBox(res.result)}</td>
-      <td class="chk val">${noneBox(res.result)}</td>
-      <td>${res.remark || ''}</td>
-    </tr>`;
-  }).join('');
+  /* colgroup measurement table: รายการ | ค่า | หน่วย | สภาพปกติ | หมายเหตุ */
+  const CG5 = `<colgroup>
+    <col style="width:54%"><col style="width:14%"><col style="width:9%"><col style="width:8%"><col style="width:15%">
+  </colgroup>`;
 
-  /* section 2 — fire pump */
-  const sec2Fp = `
-    <tr><td colspan="6" class="shdr">2. ค่าที่บันทึกได้ก่อนเดินเครื่อง</td></tr>
+  /* Jockey Pump: nested split table (voltage left + current right) */
+  const jpRows = `
+  <tr>
+    <td colspan="5" style="padding:0">
+      <table style="width:100%;border-collapse:collapse;table-layout:fixed">
+        <colgroup>
+          <col style="width:15%"><col style="width:10%"><col style="width:10%"><col style="width:10%">
+          <col style="width:15%"><col style="width:10%"><col style="width:10%"><col style="width:10%">
+          <col style="width:10%">
+        </colgroup>
+        <tr class="sub">
+          <th class="val">Jockey Pump</th><th class="val">L1-L2</th><th class="val">L2-L3</th><th class="val">L1-L3</th>
+          <th class="val">Jockey Pump</th><th class="val">L1</th><th class="val">L2</th><th class="val">L3</th>
+          <th></th>
+        </tr>
+        <tr>
+          <td class="val">แรงดันไฟฟ้า</td>
+          <td class="val">${v(jp.voltageL1L2)}</td><td class="val">${v(jp.voltageL2L3)}</td><td class="val">${v(jp.voltageL1L3)}</td>
+          <td class="val">กระแสไฟฟ้า</td>
+          <td class="val">${v(jp.currentL1)}</td><td class="val">${v(jp.currentL2)}</td><td class="val">${v(jp.currentL3)}</td>
+          <td></td>
+        </tr>
+      </table>
+    </td>
+  </tr>`;
+
+  /* Pre-Run Measurements (Fire Pump): Engine + Battery Data + Jockey */
+  const preRunFp = `
+  <table style="table-layout:fixed;width:100%;margin-bottom:2px">
+    ${CG5}
     <tr class="sub">
-      <th style="text-align:left" colspan="3">รายการ</th>
-      <th class="val">L1 / L1-L2</th>
-      <th class="val">L2 / L2-L3</th>
-      <th class="val">L3 / L1-L3</th>
+      <th rowspan="2" style="text-align:left">หัวข้อที่ทำการวัดค่า</th>
+      <th colspan="3" class="val">ค่าที่บันทึกได้</th>
+      <th rowspan="2">หมายเหตุ</th>
     </tr>
-    <tr><td colspan="3">ความดันน้ำในระบบก่อนเดินเครื่อง (Psi)</td><td colspan="3" class="val">${v(r.waterPressure)}</td></tr>
-    <tr><td colspan="3">แรงดันแบตเตอรี่ Battery #1 (Volt)</td><td colspan="3" class="val">${v(r.battery1Voltage)}</td></tr>
-    <tr><td colspan="3">แรงดันแบตเตอรี่ Battery #2 (Volt)</td><td colspan="3" class="val">${v(r.battery2Voltage)}</td></tr>
-    <tr class="sub"><td colspan="6">Jockey Pump</td></tr>
-    <tr>
-      <td colspan="3">แรงดัน (Volt)</td>
-      <td class="val">${v(jp.voltageL1L2)}</td>
-      <td class="val">${v(jp.voltageL2L3)}</td>
-      <td class="val">${v(jp.voltageL1L3)}</td>
-    </tr>
-    <tr>
-      <td colspan="3">กระแส (Amp)</td>
-      <td class="val">${v(jp.currentL1)}</td>
-      <td class="val">${v(jp.currentL2)}</td>
-      <td class="val">${v(jp.currentL3)}</td>
-    </tr>`;
+    <tr class="sub"><th class="val">ค่า</th><th class="val">หน่วย</th><th class="val">สภาพปกติ</th></tr>
+    <tr class="sub"><td colspan="5" style="text-align:center">Engine</td></tr>
+    <tr><td>แรงดันน้ำในระบบ</td><td class="val">${v(r.waterPressure)}</td><td class="val">Psi</td><td class="chk val">☐</td><td></td></tr>
+    <tr class="sub"><td colspan="5" style="text-align:center">Battery Data</td></tr>
+    <tr><td>แรงดันไฟฟ้าของแบตเตอรี่ No.1</td><td class="val">${v(r.battery1Voltage)}</td><td class="val">Volt</td><td class="chk val">☐</td><td></td></tr>
+    <tr><td>แรงดันไฟฟ้าของแบตเตอรี่ No.2</td><td class="val">${v(r.battery2Voltage)}</td><td class="val">Volt</td><td class="chk val">☐</td><td></td></tr>
+    ${jpRows}
+  </table>`;
 
-  /* section 2 — generator */
-  const sec2Gen = `
-    <tr><td colspan="6" class="shdr">2. ค่าที่บันทึกได้ก่อนเดินเครื่อง</td></tr>
+  /* Pre-Run Measurements (Generator): Battery + Offload Voltage */
+  const preRunGen = `
+  <table style="table-layout:fixed;width:100%;margin-bottom:2px">
+    <colgroup>
+      <col style="width:32%"><col style="width:10%"><col style="width:10%"><col style="width:10%">
+      <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:8%">
+    </colgroup>
     <tr class="sub">
-      <th style="text-align:left" colspan="3">รายการ</th>
-      <th class="val">L1 / L1-L2</th>
-      <th class="val">L2 / L2-L3</th>
-      <th class="val">L3 / L1-L3</th>
+      <th style="text-align:left">หัวข้อที่ทำการวัดค่า</th>
+      <th colspan="6" class="val">ค่าที่บันทึกได้</th>
+      <th>หมายเหตุ</th>
     </tr>
-    <tr><td colspan="3">แรงดันแบตเตอรี่ (Volt)</td><td colspan="3" class="val">${v(r.batteryVoltage)}</td></tr>
-    <tr class="sub"><td colspan="6">ค่าแรงดัน Off Load (Volt)</td></tr>
-    <tr>
-      <td colspan="3">Phase to Neutral (V)</td>
-      <td class="val">${v(el.offload_L1N)}</td>
-      <td class="val">${v(el.offload_L2N)}</td>
-      <td class="val">${v(el.offload_L3N)}</td>
+    <tr><td>แรงดันแบตเตอรี่</td><td colspan="6" class="val">${v(r.batteryVoltage)}</td><td></td></tr>
+    <tr class="sub"><td colspan="8" style="text-align:center">ค่าแรงดัน Off Load (Volt)</td></tr>
+    <tr class="sub">
+      <td></td>
+      <th class="val">L1-N</th><th class="val">L2-N</th><th class="val">L3-N</th>
+      <th class="val">L1-L2</th><th class="val">L2-L3</th><th class="val">L1-L3</th>
+      <td></td>
     </tr>
     <tr>
-      <td colspan="3">Phase to Phase (V)</td>
-      <td class="val">${v(el.offload_L1L2)}</td>
-      <td class="val">${v(el.offload_L2L3)}</td>
-      <td class="val">${v(el.offload_L1L3)}</td>
-    </tr>`;
+      <td>Phase to Neutral / Phase to Phase</td>
+      <td class="val">${v(el.offload_L1N)}</td><td class="val">${v(el.offload_L2N)}</td><td class="val">${v(el.offload_L3N)}</td>
+      <td class="val">${v(el.offload_L1L2)}</td><td class="val">${v(el.offload_L2L3)}</td><td class="val">${v(el.offload_L1L3)}</td>
+      <td></td>
+    </tr>
+  </table>`;
 
-  /* section 3 */
-  const sec3RowsFp = [
-    ['ความเร็วรอบ (RPM)',              v(t.rpm)],
-    ['แรงดันน้ำมันเครื่อง (Psi)',       v(t.oilPressure)],
-    ['อุณหภูมิน้ำหล่อเย็น (°C)',       v(t.coolantTemp)],
-    ['แรงดันน้ำระบายความร้อน (Psi)',    v(t.coolingPressure)],
-    ['แรงดันน้ำในระบบขณะเดิน (Psi)',   v(t.systemPressure)],
-    ['อัตราการใช้เชื้อเพลิง (Liters)',  v(t.fuelConsumption)],
+  /* Test-Run rows — ลำดับตรงตาม field-map row numbers */
+  const testRunFp = [
+    ['ความเร็วรอบของเครื่องยนต์',                    v(t.rpm),             'Rpm',    ''],
+    ['แรงดันน้ำมันเครื่อง',                          v(t.oilPressure),     'Psi',    ''],
+    ['แรงดันน้ำระบายความร้อน',                       v(t.coolingPressure), 'Psi',    ''],
+    ['อุณหภูมิน้ำหล่อเย็นและเครื่องทำงาน 10 นาที', v(t.coolantTemp),     '°C',     '( ไม่ควรเกิน 90 °C )'],
+    ['แรงดันน้ำในระบบ',                              v(t.systemPressure),  'Psi',    'ทดสอบปิด Valve ใหญ่'],
+    ['อัตราการใช้เชื้อเพลิงต่อครั้ง',               v(t.fuelConsumption), 'Liters', ''],
   ];
-  const sec3RowsGen = [
-    ['ความเร็วรอบ (RPM)',              v(t.rpm)],
-    ['แรงดันน้ำมันเครื่อง (Psi)',       v(t.oilPressure)],
-    ['อุณหภูมิน้ำหล่อเย็น (°C)',       v(t.coolantTemp)],
-    ['แรงดันชาร์จแบตเตอรี่ (Volt)',    v(t.chargeVoltage)],
-    ['ความถี่ไฟฟ้า (Hz)',              v(t.frequency)],
-    ['อัตราการใช้เชื้อเพลิง (Liters)',  v(t.fuelConsumption)],
+  const testRunGen = [
+    ['ความเร็วรอบของเครื่องยนต์', v(t.rpm),            'Rpm',   ''],
+    ['แรงดันน้ำมันเครื่อง',       v(t.oilPressure),    'Psi',   ''],
+    ['อุณหภูมิน้ำหล่อเย็น',      v(t.coolantTemp),    '°C',    ''],
+    ['แรงดันชาร์จแบตเตอรี่',     v(t.chargeVoltage),  'Volt',  ''],
+    ['ความถี่ไฟฟ้า',             v(t.frequency),      'Hz',    ''],
+    ['อัตราการใช้เชื้อเพลิง',    v(t.fuelConsumption),'Liters',''],
   ];
-  const sec3DataRows = (isFp ? sec3RowsFp : sec3RowsGen)
-    .map(([lbl, val]) => `<tr><td colspan="4">${lbl}</td><td colspan="2" class="val">${val}</td></tr>`)
+  const testRunDataRows = (isFp ? testRunFp : testRunGen)
+    .map(([lbl, val, unit, rem]) =>
+      `<tr><td>${lbl}</td><td class="val">${val}</td><td class="val">${unit}</td><td class="chk val">☐</td><td>${rem}</td></tr>`)
     .join('');
-  const sec3 = `
-    <tr><td colspan="6" class="shdr">3. ค่าที่บันทึกได้ขณะเดินเครื่อง (Test Run)</td></tr>
-    <tr class="sub"><th colspan="4" style="text-align:left">รายการ</th><th colspan="2" class="val">ค่าที่ได้</th></tr>
-    ${sec3DataRows}`;
+
+  const afterRunLabel = isFp
+    ? '3. After-Run &nbsp;&nbsp;&nbsp; (FirePump Auto Start : 110 psi. / Jockey Pump Start : 140 psi. Stop : 162 psi.)'
+    : '3. After-Run';
 
   const approverImg = approverSigB64
     ? `<img src="data:image/png;base64,${approverSigB64}" style="height:34px;display:block;margin:0 auto 2px">`
@@ -283,103 +290,78 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
 <div class="page">
   ${header(machineInfo, data, logoB64, 'Sheet 2/2')}
 
-  <table style="table-layout:fixed;width:100%;margin-bottom:3px">
+  <!-- 1. Pre-Run Visual Inspection -->
+  <table style="table-layout:fixed;width:100%;margin-bottom:2px">
     <colgroup>
-      <col style="width:4%"><col style="width:38%"><col style="width:16%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:12%">
+      <col style="width:4%"><col style="width:45%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:24%">
     </colgroup>
-    <!-- checklist 1 -->
-    <tr><td colspan="7" class="shdr">1. Pre-Run Visual Inspection</td></tr>
+    <tr><td colspan="6" class="shdr">1. Pre-Run Visual Inspection</td></tr>
     <tr class="sub">
       <th class="val">#</th>
       <th style="text-align:left">รายการตรวจสอบ</th>
-      <th style="text-align:left">หมายเหตุ</th>
       <th class="val">ปกติ</th>
       <th class="val">ผิดปกติ</th>
       <th class="val">ไม่มี</th>
-      <th></th>
+      <th>หมายเหตุ</th>
     </tr>
     ${items1.map((item, i) => {
       const res = (data.preRunVisual || [])[i] || {};
       return `<tr>
         <td class="val">${i + 1}</td>
         <td>${item.text}</td>
-        <td>${res.remark || ''}</td>
         <td class="chk val">${normBox(res.result)}</td>
         <td class="chk val">${abnBox(res.result)}</td>
         <td class="chk val">${noneBox(res.result)}</td>
-        <td></td>
+        <td>${res.remark || ''}</td>
       </tr>`;
     }).join('')}
   </table>
 
-  <table style="table-layout:fixed;width:100%;margin-bottom:3px">
-    <colgroup>
-      <col style="width:42%"><col style="width:14%"><col style="width:14%"><col style="width:14%">
-      <col style="width:16%">
-    </colgroup>
-    <tr><td colspan="5" class="shdr">2. ค่าที่บันทึกได้ก่อนเดินเครื่อง</td></tr>
+  <!-- Pre-Run Measurements -->
+  ${isFp ? preRunFp : preRunGen}
+
+  <!-- 2. Test-Run -->
+  <table style="table-layout:fixed;width:100%;margin-bottom:2px">
+    ${CG5}
+    <tr><td colspan="5" class="shdr">2. Test-Run</td></tr>
     <tr class="sub">
-      <th style="text-align:left">รายการ</th>
-      <th class="val">${isFp ? 'L1-L2' : 'L1-N / L1-L2'}</th>
-      <th class="val">${isFp ? 'L2-L3' : 'L2-N / L2-L3'}</th>
-      <th class="val">${isFp ? 'L1-L3' : 'L3-N / L1-L3'}</th>
-      <th class="val">หมายเหตุ</th>
+      <th rowspan="2" style="text-align:left">หัวข้อที่ทำการวัดค่า</th>
+      <th colspan="3" class="val">ค่าที่บันทึกได้</th>
+      <th rowspan="2">หมายเหตุ</th>
     </tr>
-    ${isFp ? `
-    <tr><td>ความดันน้ำในระบบก่อนเดินเครื่อง (Psi)</td><td colspan="3" class="val">${v(r.waterPressure)}</td><td></td></tr>
-    <tr><td>แรงดันแบตเตอรี่ Battery #1 (Volt)</td><td colspan="3" class="val">${v(r.battery1Voltage)}</td><td></td></tr>
-    <tr><td>แรงดันแบตเตอรี่ Battery #2 (Volt)</td><td colspan="3" class="val">${v(r.battery2Voltage)}</td><td></td></tr>
-    <tr class="sub"><td colspan="5">Jockey Pump</td></tr>
-    <tr><td>แรงดัน (Volt)</td><td class="val">${v(jp.voltageL1L2)}</td><td class="val">${v(jp.voltageL2L3)}</td><td class="val">${v(jp.voltageL1L3)}</td><td></td></tr>
-    <tr><td>กระแส (Amp)</td><td class="val">${v(jp.currentL1)}</td><td class="val">${v(jp.currentL2)}</td><td class="val">${v(jp.currentL3)}</td><td></td></tr>
-    ` : `
-    <tr><td>แรงดันแบตเตอรี่ (Volt)</td><td colspan="3" class="val">${v(r.batteryVoltage)}</td><td></td></tr>
-    <tr class="sub"><td colspan="5">ค่าแรงดัน Off Load (Volt)</td></tr>
-    <tr><td>Phase to Neutral</td><td class="val">${v(el.offload_L1N)}</td><td class="val">${v(el.offload_L2N)}</td><td class="val">${v(el.offload_L3N)}</td><td></td></tr>
-    <tr><td>Phase to Phase</td><td class="val">${v(el.offload_L1L2)}</td><td class="val">${v(el.offload_L2L3)}</td><td class="val">${v(el.offload_L1L3)}</td><td></td></tr>
-    `}
+    <tr class="sub"><th class="val">ค่า</th><th class="val">หน่วย</th><th class="val">สภาพปกติ</th></tr>
+    <tr class="sub"><td colspan="5" style="text-align:center">Engine</td></tr>
+    ${testRunDataRows}
   </table>
 
-  <table style="table-layout:fixed;width:100%;margin-bottom:3px">
-    <colgroup>
-      <col style="width:60%"><col style="width:24%"><col style="width:16%">
-    </colgroup>
-    <tr><td colspan="3" class="shdr">3. ค่าที่บันทึกได้ขณะเดินเครื่อง (Test Run)</td></tr>
-    <tr class="sub"><th style="text-align:left">รายการ</th><th class="val">ค่าที่ได้</th><th class="val">หมายเหตุ</th></tr>
-    ${(isFp ? sec3RowsFp : sec3RowsGen).map(([lbl, val]) =>
-      `<tr><td>${lbl}</td><td class="val">${val}</td><td></td></tr>`
-    ).join('')}
-  </table>
-
-  <table style="table-layout:fixed;width:100%;margin-bottom:3px">
-    <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+  <!-- 3. After-Run + Anothers -->
+  <table style="width:100%;margin-bottom:2px">
+    <tr><td colspan="2" class="shdr">${afterRunLabel}</td></tr>
     <tr>
-      <td style="vertical-align:top;padding:0;border:none">
-        <table style="width:100%">
-          <tr><td class="shdr">4. หมายเหตุ / ข้อสังเกต</td></tr>
-          <tr><td style="min-height:34px;white-space:pre-line">${a.comment || ''}</td></tr>
-        </table>
-      </td>
-      <td style="vertical-align:top;padding:0;padding-left:4px;border:none">
-        <table style="width:100%">
-          <tr><td class="shdr">5. สรุปผลการตรวจสอบ</td></tr>
-          <tr><td style="min-height:34px;white-space:pre-line">${conclusion}</td></tr>
-        </table>
-      </td>
+      <td style="width:15%;font-weight:bold;vertical-align:top;padding:2px 4px">Anothers :</td>
+      <td style="white-space:pre-line;vertical-align:top;min-height:30px;padding:2px 4px">${a.comment || ''}</td>
     </tr>
+    <tr><td colspan="2" style="height:16px;border-top:1px dotted #888"></td></tr>
   </table>
 
+  <!-- Conclusion Result -->
+  <table style="width:100%;margin-bottom:4px">
+    <tr><td class="shdr">Conclusion Result :</td></tr>
+    <tr><td style="white-space:pre-line;padding:2px 6px;min-height:30px">${conclusion}</td></tr>
+  </table>
+
+  <!-- ลายเซ็น -->
   <table style="margin-top:6px">
     <tr>
-      <td class="nb" style="width:50%;text-align:center;padding-top:10px">
-        <div style="border-top:1px solid #000;display:inline-block;width:70%;padding-top:3px">
+      <td class="nb" style="width:50%;text-align:center;padding-top:8px">
+        <div style="border-top:1px solid #000;display:inline-block;width:72%;padding-top:3px">
           <div>ผู้ตรวจสอบ</div>
           <div style="font-weight:bold;margin:2px 0">${a.inspectedBy || '( ………………………………… )'}</div>
           <div>วันที่ ${inspDate}</div>
         </div>
       </td>
-      <td class="nb" style="width:50%;text-align:center;padding-top:10px">
-        <div style="border-top:1px solid #000;display:inline-block;width:70%;padding-top:3px">
+      <td class="nb" style="width:50%;text-align:center;padding-top:8px">
+        <div style="border-top:1px solid #000;display:inline-block;width:72%;padding-top:3px">
           ${approverImg}
           <div>ผู้อนุมัติ</div>
           <div style="font-weight:bold;margin:2px 0">${a.approvedBy || '( ………………………………… )'}</div>
