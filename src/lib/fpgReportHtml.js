@@ -140,35 +140,21 @@ function checklist0(items, results) {
 function machinePhotos(imgB64List) {
   if (!imgB64List || imgB64List.length === 0) return '';
   const COLS = 4;
-  let cells = '';
-  imgB64List.forEach(b64 => {
-    cells += `<td class="photo-cell" style="width:${100/COLS}%">
-      <img src="data:image/jpeg;base64,${b64}" style="width:100%;height:72px;object-fit:cover;display:block;" />
-    </td>`;
-  });
-  // pad to full row
-  const rem = imgB64List.length % COLS;
-  if (rem !== 0) {
-    for (let i = 0; i < COLS - rem; i++) {
-      cells += `<td class="photo-cell" style="width:${100/COLS}%"></td>`;
-    }
-  }
-  // group into rows of COLS
-  const imgs = imgB64List.concat(Array(rem ? COLS - rem : 0).fill(null));
+  const padded = [...imgB64List];
+  const rem = padded.length % COLS;
+  if (rem !== 0) for (let i = 0; i < COLS - rem; i++) padded.push(null);
   let photoRows = '';
-  for (let i = 0; i < imgs.length; i += COLS) {
-    const rowCells = imgs.slice(i, i + COLS).map(b64 =>
+  for (let i = 0; i < padded.length; i += COLS) {
+    const rowCells = padded.slice(i, i + COLS).map(b64 =>
       b64
-        ? `<td class="photo-cell" style="width:${100/COLS}%"><img src="data:image/jpeg;base64,${b64}" style="width:100%;height:72px;object-fit:cover;display:block;" /></td>`
+        ? `<td class="photo-cell" style="width:${100/COLS}%"><img src="data:image/jpeg;base64,${b64}" style="width:100%;height:auto;display:block;" /></td>`
         : `<td class="photo-cell" style="width:${100/COLS}%"></td>`
     ).join('');
     photoRows += `<tr>${rowCells}</tr>`;
   }
   return `
 <table>
-  <tr>
-    <td colspan="${COLS}" class="sec-hdr">รูปประกอบเครื่อง</td>
-  </tr>
+  <tr><td colspan="${COLS}" class="sec-hdr">รูปประกอบเครื่อง</td></tr>
   ${photoRows}
 </table>`;
 }
@@ -217,14 +203,107 @@ function checklist1(items, results) {
 </table>`;
 }
 
-/* ---- section 2 & 3: measurements as one table each ---- */
-function measureTable(secTitle, pairs) {
-  const rows = pairs.map(([label, val]) =>
+/* ---- section 2 FP: measurements before run (with Jockey split cols) ---- */
+function sec2TableFp(r) {
+  const jp = r.jockeyPump || {};
+  return `
+<table style="margin-bottom:4px">
+  <tr><td colspan="7" class="sec-hdr">2. ค่าที่บันทึกได้ก่อนเดินเครื่อง</td></tr>
+  <tr class="thead-row">
+    <th colspan="4" style="text-align:left">รายการ</th>
+    <th colspan="3" style="text-align:center">ค่าที่ได้</th>
+  </tr>
+  <tr>
+    <td colspan="4">ความดันน้ำในระบบก่อนเดินเครื่อง (Psi)</td>
+    <td colspan="3" class="val-col">${v(r.waterPressure)}</td>
+  </tr>
+  <tr>
+    <td colspan="4">แรงดันแบตเตอรี่ Battery #1 (Volt)</td>
+    <td colspan="3" class="val-col">${v(r.battery1Voltage)}</td>
+  </tr>
+  <tr>
+    <td colspan="4">แรงดันแบตเตอรี่ Battery #2 (Volt)</td>
+    <td colspan="3" class="val-col">${v(r.battery2Voltage)}</td>
+  </tr>
+  <tr class="sub-hdr">
+    <td colspan="7">Jockey Pump</td>
+  </tr>
+  <tr>
+    <td colspan="4">แรงดัน (Volt)</td>
+    <td style="text-align:center;width:60px">L1-L2<br/>${v(jp.voltageL1L2)}</td>
+    <td style="text-align:center;width:60px">L2-L3<br/>${v(jp.voltageL2L3)}</td>
+    <td style="text-align:center;width:60px">L1-L3<br/>${v(jp.voltageL1L3)}</td>
+  </tr>
+  <tr>
+    <td colspan="4">กระแส (Amp)</td>
+    <td style="text-align:center">L1<br/>${v(jp.currentL1)}</td>
+    <td style="text-align:center">L2<br/>${v(jp.currentL2)}</td>
+    <td style="text-align:center">L3<br/>${v(jp.currentL3)}</td>
+  </tr>
+</table>`;
+}
+
+/* ---- section 2 GEN ---- */
+function sec2TableGen(r) {
+  const el = r.electrical || {};
+  return `
+<table style="margin-bottom:4px">
+  <tr><td colspan="7" class="sec-hdr">2. ค่าที่บันทึกได้ก่อนเดินเครื่อง</td></tr>
+  <tr class="thead-row">
+    <th colspan="4" style="text-align:left">รายการ</th>
+    <th colspan="3" style="text-align:center">ค่าที่ได้</th>
+  </tr>
+  <tr>
+    <td colspan="4">แรงดันแบตเตอรี่ (Volt)</td>
+    <td colspan="3" class="val-col">${v(r.batteryVoltage)}</td>
+  </tr>
+  <tr class="sub-hdr">
+    <td colspan="7">ค่าแรงดัน Off Load (Volt)</td>
+  </tr>
+  <tr>
+    <td colspan="4">Phase to Neutral</td>
+    <td style="text-align:center;width:60px">L1-N<br/>${v(el.offload_L1N)}</td>
+    <td style="text-align:center;width:60px">L2-N<br/>${v(el.offload_L2N)}</td>
+    <td style="text-align:center;width:60px">L3-N<br/>${v(el.offload_L3N)}</td>
+  </tr>
+  <tr>
+    <td colspan="4">Phase to Phase</td>
+    <td style="text-align:center">L1-L2<br/>${v(el.offload_L1L2)}</td>
+    <td style="text-align:center">L2-L3<br/>${v(el.offload_L2L3)}</td>
+    <td style="text-align:center">L1-L3<br/>${v(el.offload_L1L3)}</td>
+  </tr>
+</table>`;
+}
+
+/* ---- section 3: test run ---- */
+function sec3Table(isFp, t) {
+  const rowsFp = [
+    ['ความเร็วรอบ (RPM)',                  v(t.rpm)],
+    ['แรงดันน้ำมันเครื่อง (Psi)',           v(t.oilPressure)],
+    ['อุณหภูมิน้ำหล่อเย็น (°C)',           v(t.coolantTemp)],
+    ['แรงดันน้ำระบายความร้อน (Psi)',        v(t.coolingPressure)],
+    ['แรงดันน้ำในระบบขณะเดิน (Psi)',       v(t.systemPressure)],
+    ['อัตราการใช้เชื้อเพลิง (Liters)',     v(t.fuelConsumption)],
+  ];
+  const rowsGen = [
+    ['ความเร็วรอบ (RPM)',                  v(t.rpm)],
+    ['แรงดันน้ำมันเครื่อง (Psi)',           v(t.oilPressure)],
+    ['อุณหภูมิน้ำหล่อเย็น (°C)',           v(t.coolantTemp)],
+    ['แรงดันชาร์จแบตเตอรี่ (Volt)',        v(t.chargeVoltage)],
+    ['ความถี่ไฟฟ้า (Hz)',                  v(t.frequency)],
+    ['แรงดันน้ำในระบบ (Psi)',              v(t.systemPressure)],
+    ['อัตราการใช้เชื้อเพลิง (Liters)',     v(t.fuelConsumption)],
+  ];
+  const rows = (isFp ? rowsFp : rowsGen).map(([label, val]) =>
     `<tr><td>${label}</td><td class="val-col">${val}</td></tr>`
   ).join('');
   return `
 <table style="margin-bottom:4px">
-  <tr><td colspan="2" class="sec-hdr">${secTitle}</td></tr>
+  <tr><td colspan="2" class="sec-hdr">3. ค่าที่บันทึกได้ขณะเดินเครื่อง (Test Run)</td></tr>
+  <tr class="thead-row">
+    <th style="text-align:left">รายการ</th>
+    <th style="text-align:center;width:80px">ค่าที่ได้</th>
+  </tr>
   ${rows}
 </table>`;
 }
@@ -242,44 +321,6 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
     ? a.conclusionText
     : (tmpl?.sheet_data_fields?.conclusion_default || []).join('\n');
 
-  const jp   = r.jockeyPump  || {};
-  const elec = r.electrical  || {};
-
-  const sec2fp = [
-    ['ความดันน้ำในระบบก่อนเดินเครื่อง (Psi)', v(r.waterPressure)],
-    ['แรงดันแบตเตอรี่ Battery #1 (Volt)', v(r.battery1Voltage)],
-    ['แรงดันแบตเตอรี่ Battery #2 (Volt)', v(r.battery2Voltage)],
-    ['แรงดัน Jockey Pump L1-L2 / L2-L3 / L1-L3 (V)',
-      `${v(jp.voltageL1L2)} / ${v(jp.voltageL2L3)} / ${v(jp.voltageL1L3)}`],
-    ['กระแส Jockey Pump L1 / L2 / L3 (A)',
-      `${v(jp.currentL1)} / ${v(jp.currentL2)} / ${v(jp.currentL3)}`],
-  ];
-  const sec2gen = [
-    ['แรงดันแบตเตอรี่ (Volt)', v(r.batteryVoltage)],
-    ['ค่าแรงดัน Off Load L1-N / L2-N / L3-N (V)',
-      `${v(elec.offload_L1N)} / ${v(elec.offload_L2N)} / ${v(elec.offload_L3N)}`],
-    ['ค่าแรงดัน Off Load L1-L2 / L2-L3 / L1-L3 (V)',
-      `${v(elec.offload_L1L2)} / ${v(elec.offload_L2L3)} / ${v(elec.offload_L1L3)}`],
-  ];
-
-  const sec3fp = [
-    ['ความเร็วรอบ (RPM)', v(t.rpm)],
-    ['แรงดันน้ำมันเครื่อง (Psi)', v(t.oilPressure)],
-    ['อุณหภูมิน้ำหล่อเย็น (°C)', v(t.coolantTemp)],
-    ['แรงดันน้ำระบายความร้อน (Psi)', v(t.coolingPressure)],
-    ['แรงดันน้ำในระบบขณะเดิน (Psi)', v(t.systemPressure)],
-    ['อัตราการใช้เชื้อเพลิง (Liters)', v(t.fuelConsumption)],
-  ];
-  const sec3gen = [
-    ['ความเร็วรอบ (RPM)', v(t.rpm)],
-    ['แรงดันน้ำมันเครื่อง (Psi)', v(t.oilPressure)],
-    ['อุณหภูมิน้ำหล่อเย็น (°C)', v(t.coolantTemp)],
-    ['แรงดันชาร์จแบตเตอรี่ (Volt)', v(t.chargeVoltage)],
-    ['ความถี่ไฟฟ้า (Hz)', v(t.frequency)],
-    ['แรงดันน้ำในระบบ (Psi)', v(t.systemPressure)],
-    ['อัตราการใช้เชื้อเพลิง (Liters)', v(t.fuelConsumption)],
-  ];
-
   const approverImg = approverSigB64
     ? `<img src="data:image/png;base64,${approverSigB64}" style="height:36px;display:block;margin:0 auto 2px">`
     : '';
@@ -291,16 +332,9 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
 
   ${checklist1(items1, data.preRunVisual || [])}
 
-  <table style="margin-bottom:4px">
-    <tr>
-      <td style="width:50%;vertical-align:top;border:none;padding:0 2px 0 0">
-        ${measureTable('2. ค่าที่บันทึกได้ก่อนเดินเครื่อง', isFp ? sec2fp : sec2gen)}
-      </td>
-      <td style="width:50%;vertical-align:top;border:none;padding:0 0 0 2px">
-        ${measureTable('3. ค่าที่บันทึกได้ขณะเดินเครื่อง (Test Run)', isFp ? sec3fp : sec3gen)}
-      </td>
-    </tr>
-  </table>
+  ${isFp ? sec2TableFp(r) : sec2TableGen(r)}
+
+  ${sec3Table(isFp, t)}
 
   <table style="margin-bottom:4px">
     <tr><td class="sec-hdr">4. หมายเหตุ / ข้อสังเกต</td></tr>
