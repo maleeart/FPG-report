@@ -20,10 +20,13 @@ async function generateListReport(type, data) {
   const ws = wb.getWorksheet(SHEET_NAMES[type]);
   if (!ws) throw new Error(`ไม่พบ sheet: ${SHEET_NAMES[type]}`);
 
-  // fit all columns on one page width (แก้ปัญหา scale ล้นขอบ)
-  ws.pageSetup.fitToPage   = true;
-  ws.pageSetup.fitToWidth  = 1;
-  ws.pageSetup.fitToHeight = 0; // ไม่จำกัดจำนวนหน้าแนวตั้ง
+  // fit all columns on one page — บังคับทุก sheet, reset scale ด้วยเพื่อไม่ให้ template scale เดิมมาทับ
+  wb.eachSheet((s) => {
+    s.pageSetup.fitToPage   = true;
+    s.pageSetup.fitToWidth  = 1;
+    s.pageSetup.fitToHeight = 0;
+    s.pageSetup.scale       = 100;
+  });
 
   const g = data.general || {};
   ws.getCell('F6').value = g.inspectionDate || data.date || '';

@@ -51,6 +51,16 @@ function clearAllYellowAllSheets(wb) {
   return total;
 }
 
+/** ตั้ง fitToPage ทุก sheet ใน workbook + reset scale เพื่อไม่ให้ template override */
+function applyFitToPageAllSheets(wb) {
+  wb.eachSheet((ws) => {
+    ws.pageSetup.fitToPage   = true;
+    ws.pageSetup.fitToWidth  = 1;
+    ws.pageSetup.fitToHeight = 0;
+    ws.pageSetup.scale       = 100;
+  });
+}
+
 /** เขียนค่าลง cell (ถ้าค่าว่างก็ข้าม — yellow ถูก clear แล้วในขั้นตอนก่อน) */
 function setCell(ws, cellRef, value) {
   if (value === null || value === undefined || value === '') return;
@@ -67,6 +77,17 @@ function markCell(ws, col, row, mark) {
   try {
     ws.getCell(`${col}${row}`).value = mark;
   } catch {}
+}
+
+/** แปลง column number (1-based) → Excel letter (1=A, 26=Z, 27=AA, 42=AP …) */
+function colNumToLetter(col) {
+  let result = '';
+  while (col > 0) {
+    const rem = (col - 1) % 26;
+    result = String.fromCharCode(65 + rem) + result;
+    col = Math.floor((col - 1) / 26);
+  }
+  return result;
 }
 
 function numVal(v) {
@@ -181,33 +202,31 @@ async function writeMachineData(wb, data) {
     setCell(ws2, `${df.conclusion_col}${row}`, conclusionLines[idx] || '');
   });
 
-  // Inspected by / Approved by (sheet2)
+  // วันที่บันทึก → ใช้วันที่กรอกข้อมูล (inspectionDate) ไม่ใช่วันนี้
   const inspDate = data.inspectionDate ? new Date(data.inspectionDate) : new Date();
-  setCell(ws2, df.inspected_by_name, afterRun.inspectedBy || '');
-  setCell(ws2, df.approved_by_name,  afterRun.approvedBy  || '');
-  // date row
-  try {
-    const dateRow = parseInt(df.inspected_by_name.replace(/[A-Z]+/, ''));
-    if (!isNaN(dateRow)) {
-      const dateRef = `AP${dateRow + 1}`;
-      setCell(ws2, dateRef, inspDate);
-      const approvedDateRef = `CY${dateRow + 1}`;
-      if (afterRun.approvedDate) setCell(ws2, approvedDateRef, new Date(afterRun.approvedDate));
-    }
-  } catch {}
+  // df.inspected_by_date / approved_by_date = เซลล์วันที่จริงใน template (AP107 / CY107)
+  setCell(ws2, df.inspected_by_date, inspDate);
+  setCell(ws2, df.approved_by_date,  inspDate);
+  // ชื่อผู้อนุมัติ: ใช้ค่า default ใน template (ตวงเพชร) → ไม่ต้องเขียนทับ
 
-  // Signature images (sheet2)
-  if (afterRun.inspectorSignature && df.signature_inspector) {
-    try {
-      const base64 = afterRun.inspectorSignature.replace(/^data:image\/\w+;base64,/, '');
-      const imgId = wb.addImage({ base64, extension: 'png' });
-      const s = df.signature_inspector;
-      ws2.addImage(imgId, {
-        tl: { col: s.col - 1, row: s.row - 1 },
-        br: { col: s.col2 - 1, row: s.row2 - 1 },
-        editAs: 'twoCell',
-      });
-    } catch (e) { console.warn('signature error:', e.message); }
+  // ลายเซ็นผู้ตรวจสอบ: ใช้ภาพถ้ามี, ไม่มีให้พิมพ์ชื่อที่ตำแหน่งลายเซ็น
+  if (df.signature_inspector) {
+    const sig = df.signature_inspector;
+    if (afterRun.inspectorSignature) {
+      try {
+        const base64 = afterRun.inspectorSignature.replace(/^data:image\/\w+;base64,/, '');
+        const imgId = wb.addImage({ base64, extension: 'png' });
+        ws2.addImage(imgId, {
+          tl: { col: sig.col - 1, row: sig.row - 1 },
+          br: { col: sig.col2 - 1, row: sig.row2 - 1 },
+          editAs: 'twoCell',
+        });
+      } catch (e) { console.warn('signature image error:', e.message); }
+    } else if (afterRun.inspectedBy) {
+      // ไม่มีลายเซ็น → พิมพ์ชื่อเป็นตัวหนังสือที่แถว sig.row (บนของ sig area)
+      const nameCell = `${colNumToLetter(sig.col)}${sig.row}`;
+      setCell(ws2, nameCell, afterRun.inspectedBy);
+    }
   }
 }
 
@@ -216,6 +235,7 @@ async function generateExcelReport(data, templatePath) {
   await wb.xlsx.readFile(templatePath);
   const cleared = clearAllYellowAllSheets(wb);
   console.log(`cleared ${cleared} yellow cells across all sheets`);
+  applyFitToPageAllSheets(wb);
   await writeMachineData(wb, data);
   return wb.xlsx.writeBuffer();
 }
@@ -225,6 +245,7 @@ async function generateCombinedReport(records, templatePath) {
   await wb.xlsx.readFile(templatePath);
   const cleared = clearAllYellowAllSheets(wb);
   console.log(`cleared ${cleared} yellow cells across all sheets`);
+  applyFitToPageAllSheets(wb);
   for (const [machineId, data] of Object.entries(records)) {
     if (!data) continue;
     try {
