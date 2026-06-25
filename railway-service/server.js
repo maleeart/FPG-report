@@ -25,8 +25,8 @@ app.post('/convert', async (req, res) => {
 
     await new Promise((resolve, reject) => {
       exec(
-        `libreoffice --headless --convert-to pdf "${xlsxPath}" --outdir "${tmpDir}"`,
-        { timeout: 60000 },
+        `python3 /app/convert.py "${xlsxPath}" "${pdfPath}"`,
+        { timeout: 90000 },
         (err, _stdout, stderr) => {
           if (err) reject(new Error(stderr || err.message));
           else resolve();
@@ -35,7 +35,7 @@ app.post('/convert', async (req, res) => {
     });
 
     if (!fs.existsSync(pdfPath)) {
-      throw new Error('LibreOffice ไม่ได้สร้างไฟล์ PDF');
+      throw new Error('convert.py ไม่ได้สร้างไฟล์ PDF');
     }
 
     const pdf = fs.readFileSync(pdfPath);
