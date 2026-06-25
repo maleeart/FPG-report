@@ -112,18 +112,38 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
        <tr><td colspan="10" style="padding:0;border:none"><table style="width:100%;border-collapse:collapse">${photoRows}</table></td></tr>`
     : '';
 
+  const tankCap = machineInfo?.tank_capacity_l;
+  const tankVal = isFp ? (tankCap ? String(tankCap) : '') : v(g.runCount, '');
+  const tankLabel = isFp ? 'ความจุถังเชื้อเพลิง' : 'จำนวนครั้งที่ทำงาน';
+  const tankUnit  = isFp ? 'Liters' : 'ครั้ง';
+
+  /* คอลัมน์: ใช้ colgroup กำหนดความกว้างตายตัว รวม = 100% */
+  const colgroup = `<colgroup>
+    <col style="width:16%"><!-- label ซ้าย -->
+    <col style="width:9%"> <!-- val -->
+    <col style="width:10%"><!-- label/serial -->
+    <col style="width:11%"><!-- val -->
+    <col style="width:8%"> <!-- label -->
+    <col style="width:7%"> <!-- val -->
+    <col style="width:11%"><!-- label -->
+    <col style="width:10%"><!-- val Before -->
+    <col style="width:4%"> <!-- / -->
+    <col style="width:14%"><!-- val After + unit -->
+  </colgroup>`;
+
   return `
 <div class="page">
   ${header(machineInfo, data, logoB64, 'Sheet 1/2')}
-  <table style="font-size:11px;margin-bottom:0">
+  <table style="font-size:10.5px;table-layout:fixed;width:100%">
+    ${colgroup}
     <!-- General Datas header -->
     <tr>
       <td colspan="9" style="font-weight:bold;padding:2px 5px">General Datas</td>
-      <td style="text-align:right;font-size:10px;white-space:nowrap;padding:2px 4px">Sheet 1/2</td>
+      <td style="text-align:right;font-size:10px;padding:2px 4px">Sheet 1/2</td>
     </tr>
     <!-- Row: Location -->
     <tr>
-      <td style="font-weight:bold;white-space:nowrap">Location</td>
+      <td style="font-weight:bold">Location</td>
       <td colspan="2">${v(machineInfo?.location_default)}</td>
       <td style="font-weight:bold">ชนิด</td>
       <td>${isFp ? 'Vertical' : 'Standby'}</td>
@@ -134,43 +154,43 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
     <tr>
       <td style="font-weight:bold">Model</td>
       <td>${v(machineInfo?.model_default)}</td>
-      <td style="font-weight:bold;white-space:nowrap">Serial-Number</td>
+      <td style="font-weight:bold">Serial-Number</td>
       <td colspan="2">${v(machineInfo?.serial_default)}</td>
       <td style="font-weight:bold">MFG</td>
       <td>${v(machineInfo?.mfg_default)}</td>
-      <td style="font-weight:bold;white-space:nowrap">RPM Rating</td>
+      <td style="font-weight:bold">RPM Rating</td>
       <td colspan="2">${v(machineInfo?.rpm_rating_default)}</td>
     </tr>
     <!-- Row: Fuel Liquid -->
     <tr>
-      <td colspan="2" style="font-weight:bold;white-space:nowrap">Qty. Of Fuel Liquid</td>
-      <td colspan="2" style="text-align:center;white-space:nowrap">( ) Gal &nbsp;( ✓ ) Lit &nbsp;( ) kg</td>
-      <td style="font-weight:bold;white-space:nowrap">Fuel Level</td>
-      <td style="white-space:nowrap">(Before) ${fuelBefore}</td>
+      <td colspan="2" style="font-weight:bold">Qty. Of Fuel Liquid</td>
+      <td colspan="2" style="text-align:center">( ) Gal &nbsp;(✓) Lit &nbsp;( ) kg</td>
+      <td style="font-weight:bold">Fuel Level</td>
+      <td style="text-align:center">(Before) ${fuelBefore}</td>
       <td style="text-align:center">/</td>
-      <td style="white-space:nowrap">(After) ${fuelAfter}</td>
+      <td style="text-align:center">(After) ${fuelAfter}</td>
       <td colspan="2">Liters</td>
     </tr>
-    <!-- Row: Duration / Hours -->
+    <!-- Row: Duration / Tank / Hours -->
     <tr>
-      <td style="font-weight:bold;white-space:nowrap">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
+      <td style="font-weight:bold">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
       <td style="text-align:center">${v(g.runDurationMins, '')}</td>
-      <td style="white-space:nowrap">mins.</td>
-      <td style="font-weight:bold;white-space:nowrap">${isFp ? 'ความจุถังเชื้อเพลิง' : 'จำนวนครั้งที่ทำงาน'}</td>
-      <td style="text-align:center">${isFp ? '' : v(g.runCount, '')}</td>
-      <td style="white-space:nowrap">${isFp ? 'Liters' : 'ครั้ง'}</td>
-      <td style="font-weight:bold;white-space:nowrap">ชั่วโมงการทำงาน</td>
-      <td style="white-space:nowrap">(Before) ${hrsBefore}</td>
+      <td>mins.</td>
+      <td style="font-weight:bold">${tankLabel}</td>
+      <td style="text-align:center">${tankVal}</td>
+      <td>${tankUnit}</td>
+      <td style="font-weight:bold">ชั่วโมงการทำงาน</td>
+      <td style="text-align:center">(Before) ${hrsBefore}</td>
       <td style="text-align:center">/</td>
-      <td style="white-space:nowrap">(After) ${hrsAfter} Hrs.</td>
+      <td>(After) ${hrsAfter} Hrs.</td>
     </tr>
     <!-- Checklist 0 header -->
-    <tr><td colspan="10" style="font-weight:bold;padding:2px 5px">0.Pre Visual Inspection</td></tr>
+    <tr><td colspan="10" style="font-weight:bold;padding:2px 5px;background:#e8f5e9">0.Pre Visual Inspection</td></tr>
     <tr style="background:#f2f2f2">
-      <th style="text-align:center;width:22px">#</th>
+      <th style="text-align:center">#</th>
       <th colspan="6" style="text-align:left">รายการตรวจสอบ</th>
-      <th style="text-align:center;width:28px">ผ่าน</th>
-      <th style="text-align:center;width:28px">ไม่ผ่าน</th>
+      <th style="text-align:center">ผ่าน</th>
+      <th style="text-align:center">ไม่ผ่าน</th>
       <th>หมายเหตุ</th>
     </tr>
     ${chkRows}

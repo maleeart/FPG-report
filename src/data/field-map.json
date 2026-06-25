@@ -17,6 +17,7 @@
       "serial_default": "PE404ST882013",
       "mfg_default": "CLARKE",
       "rpm_rating_default": 2350,
+      "tank_capacity_l": 600,
       "sheet_visual": "FIRE PUMP#1-1",
       "sheet_data": "FIRE PUMP#1-2",
       "image_files": [
@@ -41,6 +42,7 @@
       "serial_default": "PE6068H997559",
       "mfg_default": "CLARKE",
       "rpm_rating_default": 2350,
+      "tank_capacity_l": 1000,
       "sheet_visual": "FIRE PUMP#2-1 ",
       "sheet_data": "FIRE PUMP#2-2",
       "image_files": [
@@ -65,6 +67,7 @@
       "serial_default": "PE4045E016856",
       "mfg_default": "CLARKE",
       "rpm_rating_default": 2350,
+      "tank_capacity_l": 750,
       "sheet_visual": "FIRE PUMP#3-1 ",
       "sheet_data": "FIRE PUMP#3-2",
       "image_files": [
