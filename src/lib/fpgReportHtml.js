@@ -63,9 +63,9 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
   const tankUnit   = isFp ? 'Liters' : 'ครั้ง';
 
   const CG = `<colgroup>
-    <col style="width:13%"><col style="width:7%"><col style="width:9%"><col style="width:9%">
-    <col style="width:9%"><col style="width:7%"><col style="width:11%">
-    <col style="width:7%"><col style="width:7%"><col style="width:21%">
+    <col style="width:15%"><col style="width:6%"><col style="width:8%"><col style="width:9%">
+    <col style="width:9%"><col style="width:5%"><col style="width:14%">
+    <col style="width:5%"><col style="width:4%"><col style="width:25%">
   </colgroup>`;
 
   const chkRows = items0.map((item, i) => {
@@ -131,18 +131,18 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
     </tr>
     <tr>
       <td colspan="2" style="font-weight:bold">Qty. Of Fuel Liquid</td>
-      <td colspan="2" class="val">( ) Gal &nbsp;(✓) Lit &nbsp;( ) kg</td>
-      <td colspan="3" style="font-weight:bold">Fuel Level</td>
+      <td colspan="4" class="val">( ) Gal &nbsp;(✓) Lit &nbsp;( ) kg</td>
+      <td style="font-weight:bold">Fuel Level</td>
       <td class="val">${fuelBefore}</td>
       <td class="val">/</td>
       <td class="val">${fuelAfter} &nbsp;Liters</td>
     </tr>
     <tr>
-      <td style="font-weight:bold">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
+      <td style="font-weight:bold;font-size:9px">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
       <td colspan="2" class="val">${v(g.runDurationMins, '')} &nbsp;mins.</td>
-      <td style="font-weight:bold">${tankLabel}</td>
+      <td style="font-weight:bold;font-size:9px">${tankLabel}</td>
       <td colspan="2" class="val">${tankVal} &nbsp;${tankUnit}</td>
-      <td style="font-weight:bold">ชั่วโมงการทำงาน</td>
+      <td style="font-weight:bold;font-size:9px">ชั่วโมงการทำงาน</td>
       <td class="val">${hrsBefore}</td>
       <td class="val">/</td>
       <td class="val">${hrsAfter} &nbsp;Hrs.</td>
@@ -282,6 +282,9 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
   const approverImg = approverSigB64
     ? `<img src="data:image/png;base64,${approverSigB64}" style="height:34px;display:block;margin:0 auto 2px">`
     : '';
+  const inspectorImg = a.inspectorSignature
+    ? `<img src="data:image/png;base64,${a.inspectorSignature}" style="height:34px;display:block;margin:0 auto 2px">`
+    : '';
 
   return `
 <div class="page">
@@ -350,6 +353,7 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
     <tr>
       <td class="nb" style="width:50%;text-align:center;padding-top:8px">
         <div style="border-top:1px solid #000;display:inline-block;width:72%;padding-top:3px">
+          ${inspectorImg}
           <div>ผู้ตรวจสอบ</div>
           <div style="font-weight:bold;margin:2px 0">${a.inspectedBy || '( ………………………………… )'}</div>
           <div>วันที่ ${inspDate}</div>
