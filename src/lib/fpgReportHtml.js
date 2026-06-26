@@ -184,27 +184,24 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
     <col style="width:54%"><col style="width:14%"><col style="width:9%"><col style="width:8%"><col style="width:15%">
   </colgroup>`;
 
-  /* Jockey Pump: nested split table (voltage left + current right) */
+  /* Jockey Pump: nested split table (voltage left + current right) ไม่มีเซลว่างขวา */
   const jpRows = `
   <tr>
     <td colspan="5" style="padding:0">
       <table style="width:100%;border-collapse:collapse;table-layout:fixed">
         <colgroup>
-          <col style="width:15%"><col style="width:10%"><col style="width:10%"><col style="width:10%">
-          <col style="width:15%"><col style="width:10%"><col style="width:10%"><col style="width:10%">
-          <col style="width:10%">
+          <col style="width:18%"><col style="width:10.5%"><col style="width:10.5%"><col style="width:10.5%">
+          <col style="width:18%"><col style="width:10.5%"><col style="width:10.5%"><col style="width:10.5%">
         </colgroup>
         <tr class="sub">
           <th class="val">Jockey Pump</th><th class="val">L1-L2</th><th class="val">L2-L3</th><th class="val">L1-L3</th>
           <th class="val">Jockey Pump</th><th class="val">L1</th><th class="val">L2</th><th class="val">L3</th>
-          <th></th>
         </tr>
         <tr>
-          <td class="val">แรงดันไฟฟ้า</td>
+          <td class="val">แรงดันไฟฟ้า (V)</td>
           <td class="val">${v(jp.voltageL1L2)}</td><td class="val">${v(jp.voltageL2L3)}</td><td class="val">${v(jp.voltageL1L3)}</td>
-          <td class="val">กระแสไฟฟ้า</td>
+          <td class="val">กระแสไฟฟ้า (A)</td>
           <td class="val">${v(jp.currentL1)}</td><td class="val">${v(jp.currentL2)}</td><td class="val">${v(jp.currentL3)}</td>
-          <td></td>
         </tr>
       </table>
     </td>
@@ -338,10 +335,12 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
   <table style="width:100%;margin-bottom:2px">
     <tr><td colspan="2" class="shdr">${afterRunLabel}</td></tr>
     <tr>
-      <td style="width:15%;font-weight:bold;vertical-align:top;padding:2px 4px">Anothers :</td>
-      <td style="white-space:pre-line;vertical-align:top;min-height:30px;padding:2px 4px">${a.comment || ''}</td>
+      <td style="width:15%;font-weight:bold;vertical-align:top;padding:3px 4px">Anothers :</td>
+      <td style="white-space:pre-line;vertical-align:top;padding:3px 4px">${a.comment || ''}</td>
     </tr>
-    <tr><td colspan="2" style="height:16px;border-top:1px dotted #888"></td></tr>
+    <tr><td colspan="2" style="height:18px;border-top:none"></td></tr>
+    <tr><td colspan="2" style="height:18px;border-top:1px dotted #ccc"></td></tr>
+    <tr><td colspan="2" style="height:18px;border-top:1px dotted #ccc"></td></tr>
   </table>
 
   <!-- Conclusion Result -->
