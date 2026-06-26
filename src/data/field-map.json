@@ -275,9 +275,9 @@
       "approved_by_date": "CY107",
       "approver_name_cell": "CY106",
       "signature_inspector": {
-        "col": 42,
+        "col": 51,
         "row": 106,
-        "col2": 55,
+        "col2": 64,
         "row2": 107
       },
       "signature_approver": {
@@ -456,9 +456,9 @@
       "approved_by_date": "CY95",
       "approver_name_cell": "CY94",
       "signature_inspector": {
-        "col": 42,
+        "col": 51,
         "row": 94,
-        "col2": 55,
+        "col2": 64,
         "row2": 95
       },
       "signature_approver": {

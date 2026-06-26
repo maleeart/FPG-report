@@ -215,8 +215,8 @@ async function writeMachineData(wb, data) {
   // ────────────────────────────────────────────────────────────
   if (df.signature_inspector) {
     const sig = df.signature_inspector;
-    // วาดลายเซ็น (ถ้ามี)
     if (afterRun.inspectorSignature) {
+      // มีลายเซ็น → วาดรูปอย่างเดียว
       try {
         const base64 = afterRun.inspectorSignature.replace(/^data:image\/\w+;base64,/, '');
         const imgId = wb.addImage({ base64, extension: 'png' });
@@ -226,13 +226,12 @@ async function writeMachineData(wb, data) {
           editAs: 'twoCell',
         });
       } catch (e) { console.warn('inspector signature image error:', e.message); }
-    }
-    // เขียนชื่อผู้ตรวจสอบเสมอ (ทั้งกรณีมีและไม่มีลายเซ็น)
-    if (afterRun.inspectedBy) {
-      const nameRef = df.inspector_name_cell || `${colNumToLetter(sig.col)}${sig.row2}`;
+    } else if (afterRun.inspectedBy) {
+      // ไม่มีลายเซ็น → เขียนชื่อแทน
+      const nameRef = df.inspector_name_cell || `${colNumToLetter(sig.col)}${sig.row}`;
       try {
         const cell = ws2.getCell(nameRef);
-        cell.value = `(${afterRun.inspectedBy})`;
+        cell.value = afterRun.inspectedBy;
         cell.font = { name: 'TH SarabunPSK', size: 14, bold: false, color: { argb: 'FF000000' } };
         cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: false };
       } catch (e) { console.warn('inspector name write error:', e.message); }
