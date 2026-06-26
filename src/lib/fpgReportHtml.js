@@ -62,10 +62,11 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
   const tankLabel  = isFp ? 'ความจุถังเชื้อเพลิง' : 'จำนวนครั้งที่ทำงาน';
   const tankUnit   = isFp ? 'Liters' : 'ครั้ง';
 
+  /* colgroup สำหรับตาราง checklist เท่านั้น (General Datas ใช้ auto-layout แยก) */
   const CG = `<colgroup>
-    <col style="width:15%"><col style="width:6%"><col style="width:8%"><col style="width:9%">
-    <col style="width:9%"><col style="width:5%"><col style="width:14%">
-    <col style="width:5%"><col style="width:4%"><col style="width:25%">
+    <col style="width:5%"><col style="width:10%"><col style="width:10%"><col style="width:10%">
+    <col style="width:10%"><col style="width:10%"><col style="width:10%">
+    <col style="width:8%"><col style="width:8%"><col style="width:19%">
   </colgroup>`;
 
   const chkRows = items0.map((item, i) => {
@@ -102,51 +103,57 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
        </td></tr>`
     : '';
 
+  const NW = 'white-space:nowrap;font-weight:bold';
   return `
 <div class="page">
   ${header(machineInfo, data, logoB64, 'Sheet 1/2')}
-  <table style="table-layout:fixed;width:100%">
-    ${CG}
+
+  <!-- General Datas — auto layout เพื่อไม่ให้ตัดคำ label -->
+  <table style="table-layout:auto;width:100%;margin-bottom:0">
     <tr>
-      <td colspan="9" style="font-weight:bold;${PAD}">General Datas</td>
-      <td style="text-align:right;${PAD}">Sheet 1/2</td>
+      <td colspan="10" style="font-weight:bold;${PAD}">General Datas</td>
     </tr>
     <tr>
-      <td style="font-weight:bold">Location</td>
+      <td style="${NW}">Location</td>
       <td colspan="2">${v(machineInfo?.location_default)}</td>
-      <td style="font-weight:bold">ชนิด</td>
+      <td style="${NW}">ชนิด</td>
       <td>${isFp ? 'Vertical' : 'Standby'}</td>
-      <td colspan="2" style="font-weight:bold">Station No.</td>
+      <td colspan="2" style="${NW}">Station No.</td>
       <td colspan="3">${machineInfo?.label || ''}</td>
     </tr>
     <tr>
-      <td style="font-weight:bold">Model</td>
+      <td style="${NW}">Model</td>
       <td>${v(machineInfo?.model_default)}</td>
-      <td style="font-weight:bold">Serial-Number</td>
+      <td style="${NW}">Serial-Number</td>
       <td colspan="2">${v(machineInfo?.serial_default)}</td>
-      <td style="font-weight:bold">MFG</td>
+      <td style="${NW}">MFG</td>
       <td>${v(machineInfo?.mfg_default)}</td>
-      <td colspan="2" style="font-weight:bold">RPM Rating</td>
+      <td colspan="2" style="${NW}">RPM Rating</td>
       <td>${v(machineInfo?.rpm_rating_default)}</td>
     </tr>
     <tr>
-      <td colspan="2" style="font-weight:bold">Qty. Of Fuel Liquid</td>
+      <td colspan="2" style="${NW}">Qty. Of Fuel Liquid</td>
       <td colspan="4" class="val">( ) Gal &nbsp;(✓) Lit &nbsp;( ) kg</td>
-      <td style="font-weight:bold">Fuel Level</td>
+      <td style="${NW}">Fuel Level</td>
       <td class="val">${fuelBefore}</td>
       <td class="val">/</td>
-      <td class="val">${fuelAfter} &nbsp;Liters</td>
+      <td class="val" style="white-space:nowrap">${fuelAfter} &nbsp;Liters</td>
     </tr>
     <tr>
-      <td style="font-weight:bold;font-size:9px">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
-      <td colspan="2" class="val">${v(g.runDurationMins, '')} &nbsp;mins.</td>
-      <td style="font-weight:bold;font-size:9px">${tankLabel}</td>
-      <td colspan="2" class="val">${tankVal} &nbsp;${tankUnit}</td>
-      <td style="font-weight:bold;font-size:9px">ชั่วโมงการทำงาน</td>
+      <td style="${NW}">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
+      <td colspan="2" class="val" style="white-space:nowrap">${v(g.runDurationMins, '')} &nbsp;mins.</td>
+      <td style="${NW}">${tankLabel}</td>
+      <td colspan="2" class="val" style="white-space:nowrap">${tankVal} &nbsp;${tankUnit}</td>
+      <td style="${NW}">ชั่วโมงการทำงาน</td>
       <td class="val">${hrsBefore}</td>
       <td class="val">/</td>
-      <td class="val">${hrsAfter} &nbsp;Hrs.</td>
+      <td class="val" style="white-space:nowrap">${hrsAfter} &nbsp;Hrs.</td>
     </tr>
+  </table>
+
+  <!-- Checklist 0 + Photos — fixed layout -->
+  <table style="table-layout:fixed;width:100%">
+    ${CG}
     <tr><td colspan="10" style="font-weight:bold;${PAD}">0.Pre Visual Inspection</td></tr>
     <tr class="sub">
       <th class="val">#</th>
@@ -282,8 +289,11 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
   const approverImg = approverSigB64
     ? `<img src="data:image/png;base64,${approverSigB64}" style="height:34px;display:block;margin:0 auto 2px">`
     : '';
-  const inspectorImg = a.inspectorSignature
-    ? `<img src="data:image/png;base64,${a.inspectorSignature}" style="height:34px;display:block;margin:0 auto 2px">`
+  const inspSigSrc = a.inspectorSignature
+    ? (a.inspectorSignature.startsWith('data:') ? a.inspectorSignature : `data:image/png;base64,${a.inspectorSignature}`)
+    : null;
+  const inspectorImg = inspSigSrc
+    ? `<img src="${inspSigSrc}" style="height:34px;display:block;margin:0 auto 2px">`
     : '';
 
   return `
@@ -363,7 +373,7 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
         <div style="border-top:1px solid #000;display:inline-block;width:72%;padding-top:3px">
           ${approverImg}
           <div>ผู้อนุมัติ</div>
-          <div style="font-weight:bold;margin:2px 0">${a.approvedBy || '( ………………………………… )'}</div>
+          <div style="font-weight:bold;margin:2px 0">${a.approvedBy || 'ตวงเพชร ชัยยานนท์'}</div>
           <div>วันที่ ${inspDate}</div>
         </div>
       </td>
