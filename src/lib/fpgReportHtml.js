@@ -132,23 +132,20 @@ function sheet1(machineInfo, data, logoB64, imgB64List) {
     <tr>
       <td colspan="2" style="font-weight:bold">Qty. Of Fuel Liquid</td>
       <td colspan="2" class="val">( ) Gal &nbsp;(✓) Lit &nbsp;( ) kg</td>
-      <td style="font-weight:bold">Fuel Level</td>
-      <td class="val">(Before) ${fuelBefore}</td>
+      <td colspan="3" style="font-weight:bold">Fuel Level</td>
+      <td class="val">${fuelBefore}</td>
       <td class="val">/</td>
-      <td class="val">(After) ${fuelAfter}</td>
-      <td colspan="2">Liters</td>
+      <td class="val">${fuelAfter} &nbsp;Liters</td>
     </tr>
     <tr>
       <td style="font-weight:bold">ระยะเวลาที่เครื่องยนต์ทำงาน</td>
-      <td class="val">${v(g.runDurationMins, '')}</td>
-      <td>mins.</td>
+      <td colspan="2" class="val">${v(g.runDurationMins, '')} &nbsp;mins.</td>
       <td style="font-weight:bold">${tankLabel}</td>
-      <td class="val">${tankVal}</td>
-      <td>${tankUnit}</td>
+      <td colspan="2" class="val">${tankVal} &nbsp;${tankUnit}</td>
       <td style="font-weight:bold">ชั่วโมงการทำงาน</td>
-      <td class="val">(Before) ${hrsBefore}</td>
+      <td class="val">${hrsBefore}</td>
       <td class="val">/</td>
-      <td>(After) ${hrsAfter} Hrs.</td>
+      <td class="val">${hrsAfter} &nbsp;Hrs.</td>
     </tr>
     <tr><td colspan="10" style="font-weight:bold;${PAD}">0.Pre Visual Inspection</td></tr>
     <tr class="sub">
@@ -218,10 +215,10 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
     </tr>
     <tr class="sub"><th class="val">ค่า</th><th class="val">หน่วย</th><th class="val">สภาพปกติ</th></tr>
     <tr class="sub"><td colspan="5" style="text-align:center">Engine</td></tr>
-    <tr><td>แรงดันน้ำในระบบ</td><td class="val">${v(r.waterPressure)}</td><td class="val">Psi</td><td class="chk val">☐</td><td></td></tr>
+    <tr><td>แรงดันน้ำในระบบ</td><td class="val">${v(r.waterPressure)}</td><td class="val">Psi</td><td class="chk val">☑</td><td></td></tr>
     <tr class="sub"><td colspan="5" style="text-align:center">Battery Data</td></tr>
-    <tr><td>แรงดันไฟฟ้าของแบตเตอรี่ No.1</td><td class="val">${v(r.battery1Voltage)}</td><td class="val">Volt</td><td class="chk val">☐</td><td></td></tr>
-    <tr><td>แรงดันไฟฟ้าของแบตเตอรี่ No.2</td><td class="val">${v(r.battery2Voltage)}</td><td class="val">Volt</td><td class="chk val">☐</td><td></td></tr>
+    <tr><td>แรงดันไฟฟ้าของแบตเตอรี่ No.1</td><td class="val">${v(r.battery1Voltage)}</td><td class="val">Volt</td><td class="chk val">☑</td><td></td></tr>
+    <tr><td>แรงดันไฟฟ้าของแบตเตอรี่ No.2</td><td class="val">${v(r.battery2Voltage)}</td><td class="val">Volt</td><td class="chk val">☑</td><td></td></tr>
     ${jpRows}
   </table>`;
 
@@ -255,24 +252,24 @@ function sheet2(machineInfo, data, logoB64, approverSigB64) {
 
   /* Test-Run rows — ลำดับตรงตาม field-map row numbers */
   const testRunFp = [
-    ['ความเร็วรอบของเครื่องยนต์',                    v(t.rpm),             'Rpm',    ''],
-    ['แรงดันน้ำมันเครื่อง',                          v(t.oilPressure),     'Psi',    ''],
-    ['แรงดันน้ำระบายความร้อน',                       v(t.coolingPressure), 'Psi',    ''],
-    ['อุณหภูมิน้ำหล่อเย็นและเครื่องทำงาน 10 นาที', v(t.coolantTemp),     '°C',     '( ไม่ควรเกิน 90 °C )'],
-    ['แรงดันน้ำในระบบ',                              v(t.systemPressure),  'Psi',    'ทดสอบปิด Valve ใหญ่'],
-    ['อัตราการใช้เชื้อเพลิงต่อครั้ง',               v(t.fuelConsumption), 'Liters', ''],
+    ['ความเร็วรอบของเครื่องยนต์',                    v(t.rpm),             'Rpm'],
+    ['แรงดันน้ำมันเครื่อง',                          v(t.oilPressure),     'Psi'],
+    ['แรงดันน้ำระบายความร้อน',                       v(t.coolingPressure), 'Psi'],
+    ['อุณหภูมิน้ำหล่อเย็นและเครื่องทำงาน 10 นาที', v(t.coolantTemp),     '°C' ],
+    ['แรงดันน้ำในระบบ',                              v(t.systemPressure),  'Psi'],
+    ['อัตราการใช้เชื้อเพลิงต่อครั้ง',               v(t.fuelConsumption), 'Liters'],
   ];
   const testRunGen = [
-    ['ความเร็วรอบของเครื่องยนต์', v(t.rpm),            'Rpm',   ''],
-    ['แรงดันน้ำมันเครื่อง',       v(t.oilPressure),    'Psi',   ''],
-    ['อุณหภูมิน้ำหล่อเย็น',      v(t.coolantTemp),    '°C',    ''],
-    ['แรงดันชาร์จแบตเตอรี่',     v(t.chargeVoltage),  'Volt',  ''],
-    ['ความถี่ไฟฟ้า',             v(t.frequency),      'Hz',    ''],
-    ['อัตราการใช้เชื้อเพลิง',    v(t.fuelConsumption),'Liters',''],
+    ['ความเร็วรอบของเครื่องยนต์', v(t.rpm),            'Rpm'],
+    ['แรงดันน้ำมันเครื่อง',       v(t.oilPressure),    'Psi'],
+    ['อุณหภูมิน้ำหล่อเย็น',      v(t.coolantTemp),    '°C' ],
+    ['แรงดันชาร์จแบตเตอรี่',     v(t.chargeVoltage),  'Volt'],
+    ['ความถี่ไฟฟ้า',             v(t.frequency),      'Hz' ],
+    ['อัตราการใช้เชื้อเพลิง',    v(t.fuelConsumption),'Liters'],
   ];
   const testRunDataRows = (isFp ? testRunFp : testRunGen)
-    .map(([lbl, val, unit, rem]) =>
-      `<tr><td>${lbl}</td><td class="val">${val}</td><td class="val">${unit}</td><td class="chk val">☐</td><td>${rem}</td></tr>`)
+    .map(([lbl, val, unit]) =>
+      `<tr><td>${lbl}</td><td class="val">${val}</td><td class="val">${unit}</td><td class="chk val">☑</td><td></td></tr>`)
     .join('');
 
   const fpAutoStart   = machineInfo?.after_run_fp_auto_start_psi;
