@@ -128,9 +128,18 @@ export default function InspectionFormPage() {
   const goPrev = () => setStepIndex(i => Math.max(i - 1, 0));
 
   const handleSubmit = async () => {
-    setSubmitState('submitting');
     setSubmitError(null);
     setSubmitWarning(null);
+    const a = data.afterRun || {};
+    if (!a.inspectedBy?.trim()) {
+      setSubmitError('กรุณากรอกชื่อผู้ตรวจสอบก่อนบันทึก');
+      return;
+    }
+    if (!a.inspectorSignature) {
+      setSubmitError('กรุณาลงลายเซ็นผู้ตรวจสอบก่อนบันทึก');
+      return;
+    }
+    setSubmitState('submitting');
     try {
       // บันทึกข้อมูลลง GitHub (ไม่ download ไฟล์ทันที — ให้ดาวน์โหลดเองจากหน้าหลัก)
       const res = await fetch('/api/save-record', {
@@ -434,9 +443,9 @@ function AfterRunStep({ data, setData, isGen, conclusionDefault }) {
       <TextField label="สรุปผล (Conclusion Result)" multiline
         value={conclusionVal} onChange={v => upd({ conclusionText: v })} />
 
-      <SignaturePad label="ลายเซ็นผู้ตรวจสอบ" value={a.inspectorSignature}
+      <SignaturePad label="ลายเซ็นผู้ตรวจสอบ *" value={a.inspectorSignature}
         onChange={sig => upd({ inspectorSignature: sig })} />
-      <TextField label="ชื่อผู้ตรวจสอบ" value={a.inspectedBy} onChange={v => upd({ inspectedBy: v })} />
+      <TextField label="ชื่อผู้ตรวจสอบ *" value={a.inspectedBy} onChange={v => upd({ inspectedBy: v })} />
 
       <div style={{ height:1, background:'var(--border-hairline)', margin:'4px 0' }} />
 
