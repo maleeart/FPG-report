@@ -24,6 +24,12 @@ function HomePageInner() {
   const [openGroups, setOpenGroups] = useState(new Set(['fpg', 'emergency', 'smoke']));
   const [selectedMonth, setSelectedMonth] = useState(null);   // "2026-06" | null = ทั้งหมด
   const [selectedBuilding, setSelectedBuilding] = useState(''); // '' = ทั้งหมด
+  const [adminMode, setAdminMode] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminPwd, setAdminPwd] = useState('');
+  const [adminError, setAdminError] = useState('');
+  const [deleting, setDeleting] = useState(null); // filename key ที่กำลังลบ
+  const [confirmDelete, setConfirmDelete] = useState(null); // { date, type, filename, building, floor }
 
   const toggleGroup = type => setOpenGroups(prev => {
     const next = new Set(prev);
@@ -75,6 +81,36 @@ function HomePageInner() {
       })
       .catch(() => { setDates([]); setGithubOk(false); setGithubError('ไม่สามารถเชื่อมต่อ API ได้'); });
   }, []);
+
+  // ── admin ────────────────────────────────────────────────────────────────
+  const handleAdminLogin = () => {
+    if (adminPwd === '24052538') {
+      setAdminMode(true);
+      setShowAdminLogin(false);
+      setAdminPwd('');
+      setAdminError('');
+    } else {
+      setAdminError('รหัสผ่านไม่ถูกต้อง');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    const { date, type, filename, building, floor } = confirmDelete;
+    const key = filename || date;
+    setDeleting(key);
+    setConfirmDelete(null);
+    try {
+      const res = await fetch('/api/delete-inspection', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: '24052538', date, type, filename, building, floor }),
+      });
+      if (!res.ok) { const e = await res.json().catch(() => ({})); alert(e.error || 'ลบไม่สำเร็จ'); return; }
+      setDates(prev => prev.filter(d => (d.filename || d.date) !== key));
+    } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+    finally { setDeleting(null); }
+  };
 
   // ── download Excel ───────────────────────────────────────────────────────
   const handleDownload = async (date, type = 'fpg', filename = null, building = '', floor = '') => {
@@ -133,11 +169,58 @@ function HomePageInner() {
       {/* ── Header ── */}
       <header className="header">
         <Image src="/logo.png" alt="Veri" width={40} height={40} className="logo" priority />
-        <div>
+        <div style={{flex:1}}>
           <h1 className="title">Facility Inspection</h1>
           <p className="subtitle">ระบบบันทึกการตรวจสอบ</p>
         </div>
+        {adminMode ? (
+          <button className="admin-badge admin-badge--on" onClick={() => setAdminMode(false)}>🔓 Admin</button>
+        ) : (
+          <button className="admin-badge" onClick={() => setShowAdminLogin(true)}>🔒</button>
+        )}
       </header>
+
+      {/* ── Admin Login Modal ── */}
+      {showAdminLogin && (
+        <div className="overlay" onClick={() => { setShowAdminLogin(false); setAdminPwd(''); setAdminError(''); }}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <span className="modal__icon">🔐</span>
+            <h2 className="modal__title">Admin Mode</h2>
+            <p className="modal__msg" style={{marginBottom:14}}>กรอกรหัสผ่านเพื่อเข้าสู่โหมดจัดการข้อมูล</p>
+            <input
+              type="password"
+              className="admin-input"
+              placeholder="รหัสผ่าน"
+              value={adminPwd}
+              onChange={e => { setAdminPwd(e.target.value); setAdminError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleAdminLogin()}
+              autoFocus
+            />
+            {adminError && <p style={{color:'var(--status-fail)',fontSize:13,margin:'6px 0 0'}}>{adminError}</p>}
+            <div style={{display:'flex',gap:8,marginTop:16}}>
+              <button className="modal__close" style={{flex:1}} onClick={() => { setShowAdminLogin(false); setAdminPwd(''); setAdminError(''); }}>ยกเลิก</button>
+              <button className="modal__close" style={{flex:1,background:'var(--accent)',color:'#fff',border:'none'}} onClick={handleAdminLogin}>เข้าสู่ระบบ</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirm Delete Modal ── */}
+      {confirmDelete && (
+        <div className="overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <span className="modal__icon">🗑️</span>
+            <h2 className="modal__title">ยืนยันการลบ</h2>
+            <p className="modal__msg">ลบรายงาน <strong>{confirmDelete.type.toUpperCase()}</strong></p>
+            <p className="modal__msg" style={{fontFamily:'var(--font-mono)',fontSize:13}}>{confirmDelete.date}{confirmDelete.building ? ` · ${confirmDelete.building}` : ''}</p>
+            <p style={{color:'var(--status-fail)',fontSize:13,margin:'8px 0 16px'}}>⚠ ลบแล้วไม่สามารถกู้คืนได้</p>
+            <div style={{display:'flex',gap:8}}>
+              <button className="modal__close" style={{flex:1}} onClick={() => setConfirmDelete(null)}>ยกเลิก</button>
+              <button className="modal__close" style={{flex:1,background:'var(--status-fail)',color:'#fff',border:'none'}} onClick={handleDelete}>ลบ</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Banners ── */}
       {justSaved && (
@@ -295,6 +378,13 @@ function HomePageInner() {
                           onClick={() => handleDownload(date, type, filename, building, floor)}>
                           {downloading === dlKey ? '⏳' : '⬇︎ Excel'}
                         </button>
+                        {adminMode && (
+                          <button className="btn-del"
+                            disabled={deleting === dlKey}
+                            onClick={() => setConfirmDelete({ date, type, filename, building, floor })}>
+                            {deleting === dlKey ? '⏳' : '🗑'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -595,6 +685,17 @@ function HomePageInner() {
           background: #b91c1c;
         }
         .btn-dl:disabled { opacity: 0.5; }
+        .btn-del {
+          background: var(--status-fail-bg);
+          color: var(--status-fail);
+          border: 1px solid var(--status-fail);
+          border-radius: 10px;
+          padding: 6px 10px;
+          font-size: 13px;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        .btn-del:disabled { opacity: 0.5; }
 
         /* ─── Coming Soon Modal ─── */
         .overlay {
@@ -646,6 +747,35 @@ function HomePageInner() {
           color: var(--ink-primary);
           cursor: pointer;
         }
+        .admin-badge {
+          background: none;
+          border: none;
+          font-size: 18px;
+          cursor: pointer;
+          padding: 4px 6px;
+          border-radius: 8px;
+          color: var(--ink-muted);
+          flex-shrink: 0;
+        }
+        .admin-badge--on {
+          background: rgba(240,70,70,0.12);
+          color: var(--status-fail);
+          font-size: 13px;
+          font-weight: 700;
+          border: 1px solid var(--status-fail);
+          padding: 4px 10px;
+        }
+        .admin-input {
+          width: 100%;
+          padding: 12px 14px;
+          border-radius: 10px;
+          border: 1.5px solid var(--border-strong);
+          background: var(--bg-input);
+          color: var(--ink-primary);
+          font-size: 16px;
+          outline: none;
+        }
+        .admin-input:focus { border-color: var(--accent); }
       `}</style>
     </div>
   );
