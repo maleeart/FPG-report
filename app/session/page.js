@@ -201,17 +201,12 @@ function SessionPageInner() {
 
   const isFirst = machineIdx === 0 && stepIdx === 0;
 
-  const handleFinalSubmit = async () => {
+  // รับ inspector data โดยตรงจาก SummaryPage เพื่อหลีกเลี่ยง race กับ setRecords
+  const handleFinalSubmit = async (inspectedBy, inspectorSignature) => {
     setSubmitState('submitting');
     setSubmitError(null);
     try {
-      // copy ชื่อ/ลายเซ็นผู้ตรวจสอบจากเครื่องสุดท้าย → ทุกเครื่อง
-      const lastMachine = machines[machines.length - 1];
-      const lastAfterRun = records[lastMachine.id]?.afterRun || {};
-      const sharedInspector = {
-        inspectedBy:        lastAfterRun.inspectedBy       || '',
-        inspectorSignature: lastAfterRun.inspectorSignature || null,
-      };
+      const sharedInspector = { inspectedBy, inspectorSignature };
       const mergedRecords = {};
       for (const m of machines) {
         mergedRecords[m.id] = {
@@ -219,8 +214,6 @@ function SessionPageInner() {
           afterRun: { ...records[m.id]?.afterRun, ...sharedInspector },
         };
       }
-
-      // บันทึกลง GitHub (best-effort)
       try {
         await fetch('/api/save-record', {
           method: 'POST',
@@ -228,7 +221,6 @@ function SessionPageInner() {
           body: JSON.stringify({ date: sessionDate, records: mergedRecords, type: 'fpg' }),
         });
       } catch {}
-
       localStorage.removeItem(DRAFT_KEY);
       router.push(`/?saved=${sessionDate}`);
     } catch (err) {
@@ -712,8 +704,7 @@ function SummaryPage({ machines, records, inspectedBy, inspectorSignature, onUpd
   };
 
   const doSubmit = () => {
-    onUpdateInspector({ inspectedBy: localName, inspectorSignature: localSig });
-    setTimeout(onSubmit, 0);
+    onSubmit(localName, localSig); // ส่งตรง ไม่ผ่าน setRecords เพื่อกัน race condition
   };
 
   return (
