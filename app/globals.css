@@ -1,30 +1,43 @@
 :root {
-  --bg-base: #15171c;
-  --bg-surface: #1d2026;
-  --bg-surface-raised: #262a32;
-  --bg-input: #0f1115;
-  --ink-primary: #f2f3f5;
-  --ink-secondary: #aab0bb;
-  --ink-muted: #6b7280;
-  --accent: #d8472b;
-  --accent-strong: #f2562f;
-  --accent-ink: #fff5f2;
-  --status-pass: #3fa66b;
-  --status-pass-bg: #1a2e22;
-  --status-fail: #e0503a;
-  --status-fail-bg: #34201c;
-  --status-neutral: #8b92a0;
-  --status-neutral-bg: #23262d;
-  --status-warn: #e8a33d;
-  --border-hairline: #34383f;
-  --border-strong: #454a53;
+  /* ── Backgrounds (blue-tinted dark) ── */
+  --bg-base: #0c1220;
+  --bg-surface: #111d32;
+  --bg-surface-raised: #172340;
+  --bg-input: #080e1a;
+
+  /* ── Text ── */
+  --ink-primary: #eef2ff;
+  --ink-secondary: #94a3c4;
+  --ink-muted: #5a6a8a;
+
+  /* ── Accent — Royal Blue (match logo) ── */
+  --accent: #2563eb;
+  --accent-strong: #3b82f6;
+  --accent-ink: #eff6ff;
+
+  /* ── Status ── */
+  --status-pass: #22c55e;
+  --status-pass-bg: #081f12;
+  --status-fail: #f04646;
+  --status-fail-bg: #2a0e0e;
+  --status-neutral: #8896b0;
+  --status-neutral-bg: #141d30;
+  --status-warn: #f59e0b;
+
+  /* ── Borders ── */
+  --border-hairline: #1e2e4a;
+  --border-strong: #2d3f5e;
+
+  /* ── Shape ── */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+
+  /* ── Typography ── */
   --font-display: 'Noto Sans Thai', 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-body: 'Noto Sans Thai', 'Sarabun', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
-  /* spacing ที่ใช้ซ้ำบ่อย */
+
   --page-px: 16px;
   color-scheme: dark;
 }
