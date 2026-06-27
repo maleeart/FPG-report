@@ -179,10 +179,13 @@ function SessionPageInner() {
       setConfirmSaving(true);
       try { await saveToGithub(records); } catch {}
       setConfirmSaving(false);
+      setShowConfirm(false);
+      setShowSummaryPage(true);
+    } else {
+      setShowConfirm(false);
+      setMachineIdx(i => i + 1);
+      setStepIdx(0);
     }
-    setShowConfirm(false);
-    setMachineIdx(i => i + 1);
-    setStepIdx(0);
   };
 
   const handleSaveAll = async () => {
