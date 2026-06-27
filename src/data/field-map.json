@@ -417,14 +417,6 @@
         {
           "row": 40,
           "text": "ระดับน้ำในหม้อน้ำ"
-        },
-        {
-          "row": 43,
-          "text": "Battery Data"
-        },
-        {
-          "row": 46,
-          "text": "แรงดันแบตเตอรี่"
         }
       ],
       "battery_voltage_cell": "BI49",
