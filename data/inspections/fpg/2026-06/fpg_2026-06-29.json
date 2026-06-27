@@ -6,8 +6,8 @@
       "machineId": "fire-pump-1",
       "inspectionDate": "2026-06-29",
       "generalData": {
-        "fuelBefore": "",
-        "runningHoursBefore": "",
+        "fuelBefore": "500",
+        "runningHoursBefore": "50",
         "runDurationMins": ""
       },
       "preVisual": [
@@ -140,8 +140,8 @@
         "systemPressure": ""
       },
       "afterRun": {
-        "fuelAfter": "",
-        "runningHoursAfter": "",
+        "fuelAfter": "540",
+        "runningHoursAfter": "58",
         "comment": "",
         "conclusionText": "",
         "inspectedBy": "",
