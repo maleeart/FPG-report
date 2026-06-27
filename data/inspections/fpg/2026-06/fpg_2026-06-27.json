@@ -583,29 +583,29 @@
       "readings": {
         "batteryVoltage": "26.9",
         "electrical": {
-          "offload_L1N": "",
-          "offload_L2N": "",
-          "offload_L3N": "",
-          "offload_L1L2": "",
-          "offload_L2L3": "",
-          "offload_L1L3": "",
+          "offload_L1N": "229",
+          "offload_L2N": "229",
+          "offload_L3N": "229",
+          "offload_L1L2": "397",
+          "offload_L2L3": "397",
+          "offload_L1L3": "397",
           "current_L1": "",
           "current_L2": "",
           "current_L3": ""
         }
       },
       "testRun": {
-        "rpm": "",
-        "oilPressure": "",
-        "coolantTemp": "",
-        "fuelConsumption": "",
-        "chargeVoltage": "",
-        "frequency": "",
+        "rpm": "1500",
+        "oilPressure": "81",
+        "coolantTemp": "41",
+        "fuelConsumption": "5",
+        "chargeVoltage": "28.3",
+        "frequency": "50",
         "systemPressure": ""
       },
       "afterRun": {
         "fuelAfter": "",
-        "runningHoursAfter": "",
+        "runningHoursAfter": "45.29",
         "comment": "",
         "conclusionText": "",
         "inspectedBy": "นันทวัฒน์",
