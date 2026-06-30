@@ -1,0 +1,49 @@
+{
+  "date": "2026-06-19",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-19",
+      "building": "อาคาร ต.0025",
+      "floor": "1,2",
+      "inspector": "ธนวิชญ์",
+      "model": "SD-651",
+      "serial": "",
+      "mfg": "Notifier"
+    },
+    "devices": [
+      {
+        "location": "ห้องน้ำหญิง/ทางเดินหน้าห้องน้ำหญิง",
+        "remarks": "",
+        "zone": "Zone 1",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องน้ำชาย/ห้องอาบน้ำ/ทางเดิน/ห้องไฟฟ้า",
+        "remarks": "",
+        "zone": "Zone 2",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "โถง/ห้องรับรอง/บันได/ห้องครัว",
+        "remarks": "",
+        "zone": "Zone 3",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ลานกีฬา",
+        "remarks": "",
+        "zone": "Zone 4",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
