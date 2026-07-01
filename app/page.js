@@ -44,6 +44,9 @@ function getStatus(lastDate) {
   return 'ok';
 }
 
+const STATUS_BADGE = { overdue: '🔴', due: '🟡', never: '⚫', ok: '🟢' };
+const STATUS_LABEL = { overdue: 'เกินกำหนด', due: 'ใกล้ครบ', never: 'ยังไม่เคยบันทึก', ok: 'ปกติ' };
+
 function HomePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,6 +58,7 @@ function HomePageInner() {
   const [justSaved, setJustSaved] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
   const [openGroups, setOpenGroups] = useState(new Set(['fpg', 'emergency', 'smoke']));
   const [selectedMonth, setSelectedMonth] = useState(null);   // "2026-06" | null = ทั้งหมด
   const [selectedBuilding, setSelectedBuilding] = useState(''); // '' = ทั้งหมด
@@ -92,6 +96,19 @@ function HomePageInner() {
       return mOk && bOk;
     });
   }, [dates, selectedMonth, selectedBuilding]);
+
+  const statusRows = useMemo(() => {
+    if (!dates) return [];
+    const smokeMap = lastDoneByBuilding(dates, 'smoke');
+    const emerMap  = lastDoneByBuilding(dates, 'emergency');
+    return BUILDINGS.map(b => ({
+      b,
+      smoke: getStatus(smokeMap[b]),
+      emer:  getStatus(emerMap[b]),
+      smokeDate: smokeMap[b],
+      emerDate:  emerMap[b],
+    })).filter(r => r.smoke !== 'ok' || r.emer !== 'ok');
+  }, [dates]);
 
   // default selectedMonth = เดือนล่าสุดที่มีข้อมูล (ตั้งค่าครั้งเดียวหลังโหลด)
   useEffect(() => {
@@ -347,45 +364,45 @@ function HomePageInner() {
           <span className="card__arrow">{showHistory ? '⌄' : '›'}</span>
         </button>
 
+        {/* Card 6 — PM Status Summary (ยุบไว้ กดเปิดถึงเห็น) */}
+        {statusRows.length > 0 && (
+          <button
+            className="card card--status"
+            onClick={() => setShowStatus(v => !v)}>
+            <span className="card__icon">⚠</span>
+            <div className="card__body">
+              <span className="card__title">สรุปสถานะรายการ PM</span>
+              <span className="card__sub">{statusRows.length} อาคารต้องดำเนินการ</span>
+            </div>
+            <span className="card__arrow">{showStatus ? '⌄' : '›'}</span>
+          </button>
+        )}
+
       </main>
 
       {/* ── Building Status Panel ── */}
-      {dates && dates.length > 0 && (() => {
-        const smokeMap = lastDoneByBuilding(dates, 'smoke');
-        const emerMap  = lastDoneByBuilding(dates, 'emergency');
-        const rows = BUILDINGS.map(b => ({
-          b,
-          smoke: getStatus(smokeMap[b]),
-          emer:  getStatus(emerMap[b]),
-          smokeDate: smokeMap[b],
-          emerDate:  emerMap[b],
-        })).filter(r => r.smoke !== 'ok' || r.emer !== 'ok');
-        if (!rows.length) return null;
-        const badge = { overdue: '🔴', due: '🟡', never: '⚫', ok: '🟢' };
-        const label = { overdue: 'เกินกำหนด', due: 'ใกล้ครบ', never: 'ยังไม่เคยบันทึก', ok: 'ปกติ' };
-        return (
-          <section className="status-panel">
-            <h3 className="status-title">⚠ ต้องดำเนินการ</h3>
-            <div className="status-header-row">
-              <span className="status-col-b"></span>
-              <span className="status-col">💡 Emer</span>
-              <span className="status-col">🚨 Smoke</span>
+      {showStatus && statusRows.length > 0 && (
+        <section className="status-panel">
+          <h3 className="status-title">⚠ ต้องดำเนินการ</h3>
+          <div className="status-header-row">
+            <span className="status-col-b"></span>
+            <span className="status-col">💡 Emer</span>
+            <span className="status-col">🚨 Smoke</span>
+          </div>
+          {statusRows.map(({ b, smoke, emer, smokeDate, emerDate }) => (
+            <div key={b} className="status-row">
+              <span className="status-col-b">{b}</span>
+              <span className="status-col" title={`${STATUS_LABEL[emer]}${emerDate ? ' · ' + emerDate : ''}`}>
+                {STATUS_BADGE[emer]} <span className="status-days">{emerDate ? `${daysSince(emerDate)}ว` : '-'}</span>
+              </span>
+              <span className="status-col" title={`${STATUS_LABEL[smoke]}${smokeDate ? ' · ' + smokeDate : ''}`}>
+                {STATUS_BADGE[smoke]} <span className="status-days">{smokeDate ? `${daysSince(smokeDate)}ว` : '-'}</span>
+              </span>
             </div>
-            {rows.map(({ b, smoke, emer, smokeDate, emerDate }) => (
-              <div key={b} className="status-row">
-                <span className="status-col-b">{b}</span>
-                <span className="status-col" title={`${label[emer]}${emerDate ? ' · ' + emerDate : ''}`}>
-                  {badge[emer]} <span className="status-days">{emerDate ? `${daysSince(emerDate)}ว` : '-'}</span>
-                </span>
-                <span className="status-col" title={`${label[smoke]}${smokeDate ? ' · ' + smokeDate : ''}`}>
-                  {badge[smoke]} <span className="status-days">{smokeDate ? `${daysSince(smokeDate)}ว` : '-'}</span>
-                </span>
-              </div>
-            ))}
-            <p className="status-legend">🟢 ปกติ · 🟡 ใกล้ครบ · 🔴 เกินกำหนด · ⚫ ยังไม่บันทึก</p>
-          </section>
-        );
-      })()}
+          ))}
+          <p className="status-legend">🟢 ปกติ · 🟡 ใกล้ครบ · 🔴 เกินกำหนด · ⚫ ยังไม่บันทึก</p>
+        </section>
+      )}
 
       {/* ── History panel ── */}
       {showHistory && (
@@ -628,6 +645,18 @@ function HomePageInner() {
         .card--history .card__title { color: var(--ink-primary); font-size: 16px; }
         .card--history .card__sub   { color: var(--ink-muted); }
         .card--history .card__arrow { color: var(--ink-muted); margin-left: auto; }
+
+        /* PM Status Summary — dark, same shell as History */
+        .card--status {
+          grid-column: 1 / -1;
+          background: var(--bg-surface-raised);
+          border: 1px solid var(--border-hairline);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .card--status .card__icon  { font-size: 24px; color: var(--status-warn); }
+        .card--status .card__title { color: var(--ink-primary); font-size: 16px; }
+        .card--status .card__sub   { color: var(--ink-muted); }
+        .card--status .card__arrow { color: var(--ink-muted); margin-left: auto; }
 
         /* Card internals */
         .card__icon { flex-shrink: 0; }
