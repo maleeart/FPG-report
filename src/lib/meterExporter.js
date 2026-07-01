@@ -12,6 +12,11 @@ const ALL_BORDERS = { top: BORDER_THIN, left: BORDER_THIN, bottom: BORDER_THIN, 
 const COL_BLUE = { argb: 'FF0000CC' };
 const COL_RED  = { argb: 'FFFF0000' };
 
+// Fill colors matched from original Excel theme colors
+const FILL_GRAY  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBDBDB' } }; // header / holiday date
+const FILL_BLUE  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBDD7EE' } }; // holiday data / workday date
+const FILL_GREEN = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6E0B5' } }; // weekend data
+
 function thaiMonthYear(yearMonth) {
   const [y, m] = yearMonth.split('-').map(Number);
   return `${THAI_MONTHS[m - 1]} ${y + 543}`;
@@ -51,9 +56,9 @@ function buildMonthHeaders(ws, yearMonth) {
   // Row 2: A2:N2 — meter info | O2:P2 — month/year
   ws.mergeCells('A2:N2');
   Object.assign(ws.getCell('A2'), {
-    value: '                                                ELSTER - KWH & KVAH  MEA  No.   MEA-140005423            ประเภท TOU 4.2.2',
+    value: 'ELSTER - KWH & KVAH  MEA  No.   MEA-140005423            ประเภท TOU 4.2.2',
     font: { name: FONT_NAME },
-    alignment: left,
+    alignment: center,
   });
   ws.mergeCells('O2:P2');
   Object.assign(ws.getCell('O2'), {
@@ -108,8 +113,11 @@ function buildMonthHeaders(ws, yearMonth) {
     Object.assign(ws.getCell(`${col}6`), { value: val, font: bold, alignment: center });
   }
 
-  // Apply border + font to header rows 1-6
-  for (let r = 1; r <= 6; r++) styleRow(ws.getRow(r), 16);
+  // Apply border + font to all header rows; gray fill on rows 3-6
+  for (let r = 1; r <= 6; r++) {
+    styleRow(ws.getRow(r), 16);
+    if (r >= 3) ws.getRow(r).eachCell({ includeEmpty: false }, cell => { cell.fill = FILL_GRAY; });
+  }
 }
 
 function generateMonthSheet(wb, sheetName, yearMonth, monthData) {
@@ -140,16 +148,22 @@ function generateMonthSheet(wb, sheetName, yearMonth, monthData) {
     if (isWeekend) {
       for (let c = 3; c <= 16; c++) ws_r.getCell(c).value = '-';
       styleRow(ws_r, 16);
-      // cols E(5)→O(15): blue font (matches original)
+      // A,B,C = no fill; D(4)→P(16) = green
+      for (let c = 4; c <= 16; c++) ws_r.getCell(c).fill = FILL_GREEN;
+      // E→O blue font
       for (let c = 5; c <= 15; c++) ws_r.getCell(c).font = { name: FONT_NAME, color: COL_BLUE };
 
     } else if (entry?.holiday) {
+      // A,B = gray fill
+      ws_r.getCell(1).fill = FILL_GRAY;
+      ws_r.getCell(2).fill = FILL_GRAY;
+      // C:P merged = blue fill + holiday name
       ws.mergeCells(`C${rowIdx}:P${rowIdx}`);
       ws_r.getCell(3).value = entry.holiday;
       ws_r.getCell(3).alignment = { horizontal: 'center', vertical: 'middle', wrapText: false };
+      ws_r.getCell(3).fill = FILL_BLUE;
+      ws_r.getCell(3).font = { name: FONT_NAME, bold: true };
       styleRow(ws_r, 16);
-      ws_r.eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } }; });
-      ws_r.getCell(3).font = { name: FONT_NAME, bold: true, color: { argb: 'FF7F6000' } };
 
     } else if (entry && !entry.holiday) {
       const { time, m10, m11, m12, m20, m21, m22, m31, m32, m60, m61 } = entry;
@@ -171,7 +185,9 @@ function generateMonthSheet(wb, sheetName, yearMonth, monthData) {
       ws_r.getCell(15).value = m60 ?? '';
       ws_r.getCell(16).value = m61 ?? '';
       styleRow(ws_r, 16);
-      // Q'TY/Day colors: E=blue, G=red, I=red (matches original)
+      // A,B,C = blue fill (workday date columns)
+      for (let c = 1; c <= 3; c++) ws_r.getCell(c).fill = FILL_BLUE;
+      // Q'TY/Day font colors: E=blue, G=red, I=red
       ws_r.getCell(5).font  = { name: FONT_NAME, color: COL_BLUE };
       ws_r.getCell(7).font  = { name: FONT_NAME, color: COL_RED };
       ws_r.getCell(9).font  = { name: FONT_NAME, color: COL_RED };
@@ -218,9 +234,9 @@ function generateSummarySheet(wb, year, monthsData) {
   // Row 2: A2:I2 + J2:K2
   ws.mergeCells('A2:I2');
   Object.assign(ws.getCell('A2'), {
-    value: '                                                ELSTER - KWH & KVAH  MEA  No.   MEA-140005423            ประเภท TOU 4.2.2',
+    value: 'ELSTER - KWH & KVAH  MEA  No.   MEA-140005423            ประเภท TOU 4.2.2',
     font: { name: FONT_NAME },
-    alignment: left,
+    alignment: center,
   });
   ws.mergeCells('J2:K2');
   Object.assign(ws.getCell('J2'), {
@@ -267,8 +283,11 @@ function generateSummarySheet(wb, year, monthsData) {
     Object.assign(ws.getCell(`${col}6`), { value: val, font: bold, alignment: center });
   }
 
-  // style header rows
-  for (let r = 1; r <= 6; r++) styleRow(ws.getRow(r), 11);
+  // style header rows; gray fill on rows 3-6
+  for (let r = 1; r <= 6; r++) {
+    styleRow(ws.getRow(r), 11);
+    if (r >= 3) ws.getRow(r).eachCell({ includeEmpty: false }, cell => { cell.fill = FILL_GRAY; });
+  }
 
   // Data rows: one per month
   let sumB = 0, sumC = 0, sumD = 0;
