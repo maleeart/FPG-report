@@ -4,6 +4,11 @@ const THAI_DAYS  = ['อาทิตย์','จันทร์','อังค�
 const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
                      'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 
+const FONT_NAME = 'TH Sarabun New';
+
+const BORDER_THIN = { style: 'thin' };
+const ALL_BORDERS = { top: BORDER_THIN, left: BORDER_THIN, bottom: BORDER_THIN, right: BORDER_THIN };
+
 function thaiMonthYear(yearMonth) {
   const [y, m] = yearMonth.split('-').map(Number);
   return `${THAI_MONTHS[m - 1]} ${y + 543}`;
@@ -16,16 +21,26 @@ function daysInMonth(yearMonth) {
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
+/** Apply font + no-wrap + border to every cell in a row */
+function styleRow(row, numCols) {
+  for (let c = 1; c <= numCols; c++) {
+    const cell = row.getCell(c);
+    cell.font = { ...(cell.font || {}), name: FONT_NAME };
+    cell.alignment = { ...(cell.alignment || {}), wrapText: false };
+    cell.border = ALL_BORDERS;
+  }
+}
+
 /** Build header rows 1-6 for a monthly sheet (cols A-P = 16 cols) */
 function buildMonthHeaders(ws, yearMonth) {
-  const bold = { bold: true };
-  const center = { horizontal: 'center', vertical: 'middle', wrapText: true };
+  const bold = { bold: true, name: FONT_NAME };
+  const center = { horizontal: 'center', vertical: 'middle', wrapText: false };
 
   // Row 1: title merged A1:P1
   ws.mergeCells('A1:P1');
   const r1 = ws.getCell('A1');
   r1.value = 'DAILY CHECK ELECTRICAL MAIN METER กฟน.';
-  r1.font = { bold: true, size: 13 };
+  r1.font = { bold: true, size: 14, name: FONT_NAME };
   r1.alignment = center;
 
   // Row 2: month/year in col O
@@ -46,7 +61,7 @@ function buildMonthHeaders(ws, yearMonth) {
     c.value = val; c.font = bold; c.alignment = center;
   }
 
-  // Row 4: sub-headers (one per meter group)
+  // Row 4: sub-headers
   const r4 = [
     ['D4:E4','kWh'],['F4:G4','On Peak kWh'],['H4:I4','Off Peak kWh'],
     ['J4','kWh'],['K4','On Peak'],['L4','Off Peak'],
@@ -75,12 +90,11 @@ function buildMonthHeaders(ws, yearMonth) {
     const c = ws.getCell(`${col}6`);
     c.value = val; c.font = bold; c.alignment = center;
   }
+
+  // Apply border + font to header rows 1-6
+  for (let r = 1; r <= 6; r++) styleRow(ws.getRow(r), 16);
 }
 
-/**
- * generateMonthSheet — adds a worksheet to wb and fills it
- * Returns { totalE, totalG, totalI, lastEntry } for summary use
- */
 function generateMonthSheet(wb, sheetName, yearMonth, monthData) {
   const ws = wb.addWorksheet(sheetName);
   buildMonthHeaders(ws, yearMonth);
@@ -91,53 +105,54 @@ function generateMonthSheet(wb, sheetName, yearMonth, monthData) {
 
   let prevD = null, prevF = null, prevH = null;
   let sumE = 0, sumG = 0, sumI = 0;
-  let lastEntry = null; // last workday entry for summary
+  let lastEntry = null;
 
   for (let d = 1; d <= total; d++) {
     const dayStr = pad2(d);
     const date = new Date(y, m - 1, d);
-    const dow = date.getDay(); // 0=Sun, 6=Sat
-    const row = 6 + d; // data starts row 7
+    const dow = date.getDay();
+    const rowIdx = 6 + d;
+    const ws_r = ws.getRow(rowIdx);
 
-    const thaiDay = THAI_DAYS[dow];
-    const ws_r = ws.getRow(row);
-
-    ws_r.getCell(1).value = thaiDay;  // A
-    ws_r.getCell(2).value = d;        // B
+    ws_r.getCell(1).value = THAI_DAYS[dow]; // A
+    ws_r.getCell(2).value = d;              // B
 
     const isWeekend = dow === 0 || dow === 6;
     const entry = days[dayStr];
 
     if (isWeekend) {
-      // C-P = "-"
       for (let c = 3; c <= 16; c++) ws_r.getCell(c).value = '-';
+      styleRow(ws_r, 16);
       ws_r.eachCell(cell => { cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FF3A3A3A' } }; });
+
     } else if (entry?.holiday) {
-      ws_r.getCell(3).value = '-'; // C
-      ws_r.getCell(4).value = entry.holiday; // D — holiday name
-      for (let c = 5; c <= 16; c++) ws_r.getCell(c).value = '-';
+      // merge C:P then write holiday name
+      ws.mergeCells(`C${rowIdx}:P${rowIdx}`);
+      ws_r.getCell(3).value = entry.holiday; // C (merged C:P)
+      ws_r.getCell(3).alignment = { horizontal: 'center', vertical: 'middle', wrapText: false };
+      styleRow(ws_r, 16);
       ws_r.eachCell(cell => { cell.fill = { type:'pattern', pattern:'solid', fgColor:{ argb:'FF78350F' } }; });
+
     } else if (entry && !entry.holiday) {
-      // workday with data
       const { time, m10, m11, m12, m20, m21, m22, m31, m32, m60, m61 } = entry;
-      ws_r.getCell(3).value = time || '';  // C
-      ws_r.getCell(4).value = m10 ?? '';   // D
-      // E: Q'TY
+      ws_r.getCell(3).value  = time || '';
+      ws_r.getCell(4).value  = m10 ?? '';
       const qtyE = prevD != null && m10 != null ? +(m10 - prevD).toFixed(3) : '-';
-      ws_r.getCell(5).value = qtyE;
-      ws_r.getCell(6).value = m11 ?? '';   // F
+      ws_r.getCell(5).value  = qtyE;
+      ws_r.getCell(6).value  = m11 ?? '';
       const qtyG = prevF != null && m11 != null ? +(m11 - prevF).toFixed(3) : '-';
-      ws_r.getCell(7).value = qtyG;
-      ws_r.getCell(8).value = m12 ?? '';   // H
+      ws_r.getCell(7).value  = qtyG;
+      ws_r.getCell(8).value  = m12 ?? '';
       const qtyI = prevH != null && m12 != null ? +(m12 - prevH).toFixed(3) : '-';
-      ws_r.getCell(9).value = qtyI;
-      ws_r.getCell(10).value = m20 ?? ''; // J
-      ws_r.getCell(11).value = m21 ?? ''; // K
-      ws_r.getCell(12).value = m22 ?? ''; // L
-      ws_r.getCell(13).value = m31 ?? ''; // M
-      ws_r.getCell(14).value = m32 ?? ''; // N
-      ws_r.getCell(15).value = m60 ?? ''; // O
-      ws_r.getCell(16).value = m61 ?? ''; // P
+      ws_r.getCell(9).value  = qtyI;
+      ws_r.getCell(10).value = m20 ?? '';
+      ws_r.getCell(11).value = m21 ?? '';
+      ws_r.getCell(12).value = m22 ?? '';
+      ws_r.getCell(13).value = m31 ?? '';
+      ws_r.getCell(14).value = m32 ?? '';
+      ws_r.getCell(15).value = m60 ?? '';
+      ws_r.getCell(16).value = m61 ?? '';
+      styleRow(ws_r, 16);
 
       if (typeof qtyE === 'number') sumE += qtyE;
       if (typeof qtyG === 'number') sumG += qtyG;
@@ -148,37 +163,42 @@ function generateMonthSheet(wb, sheetName, yearMonth, monthData) {
       prevH = m12 ?? prevH;
       lastEntry = entry;
     } else {
-      // workday, no data yet — leave C-P empty
+      // no data — still border
+      styleRow(ws_r, 16);
     }
   }
 
   // TOTAL row
   const totalRow = ws.getRow(6 + total + 1);
   totalRow.getCell(1).value = 'TOTAL';
-  totalRow.getCell(1).font = { bold: true };
   totalRow.getCell(5).value = +sumE.toFixed(3);
   totalRow.getCell(7).value = +sumG.toFixed(3);
   totalRow.getCell(9).value = +sumI.toFixed(3);
+  styleRow(totalRow, 16);
+  totalRow.getCell(1).font = { bold: true, name: FONT_NAME };
 
   return { totalE: +sumE.toFixed(3), totalG: +sumG.toFixed(3), totalI: +sumI.toFixed(3), lastEntry };
 }
 
 function generateSummarySheet(wb, year, monthsData) {
   const ws = wb.addWorksheet(`รวม-${String(year).slice(2)}`);
+  const bold = { bold: true, name: FONT_NAME };
+  const center = { horizontal: 'center', vertical: 'middle', wrapText: false };
 
-  // Simple header
   ws.mergeCells('A1:K1');
   const h = ws.getCell('A1');
   h.value = `SUMMARY ELECTRICAL MAIN METER กฟน. ปี ${+year + 543}`;
-  h.font = { bold: true, size: 13 };
-  h.alignment = { horizontal: 'center', vertical: 'middle' };
+  h.font = { bold: true, size: 14, name: FONT_NAME };
+  h.alignment = center;
 
   const headers2 = ['เดือน','kWh Total','On Peak kWh','Off Peak kWh','Prev kWh','Prev On Peak','Prev Off Peak','Max Demand On','Max Demand Off','kVarh','kVar'];
   headers2.forEach((v, i) => {
     const c = ws.getRow(2).getCell(i + 1);
-    c.value = v; c.font = { bold: true };
-    c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    c.value = v; c.font = bold;
+    c.alignment = center;
   });
+  styleRow(ws.getRow(1), 11);
+  styleRow(ws.getRow(2), 11);
 
   let sumB = 0, sumC = 0, sumD = 0;
   let dataRow = 3;
@@ -189,9 +209,9 @@ function generateSummarySheet(wb, year, monthsData) {
     const row = ws.getRow(dataRow++);
     row.getCell(1).value = thaiMonthYear(ym);
     if (info) {
-      row.getCell(2).value = info.totalE;
-      row.getCell(3).value = info.totalG;
-      row.getCell(4).value = info.totalI;
+      row.getCell(2).value  = info.totalE;
+      row.getCell(3).value  = info.totalG;
+      row.getCell(4).value  = info.totalI;
       const le = info.lastEntry || {};
       row.getCell(5).value  = le.m20 ?? '';
       row.getCell(6).value  = le.m21 ?? '';
@@ -204,13 +224,15 @@ function generateSummarySheet(wb, year, monthsData) {
       sumC += info.totalG || 0;
       sumD += info.totalI || 0;
     }
+    styleRow(row, 11);
   }
 
   const tot = ws.getRow(dataRow);
-  tot.getCell(1).value = 'TOTAL'; tot.getCell(1).font = { bold: true };
+  tot.getCell(1).value = 'TOTAL'; tot.getCell(1).font = bold;
   tot.getCell(2).value = +sumB.toFixed(3);
   tot.getCell(3).value = +sumC.toFixed(3);
   tot.getCell(4).value = +sumD.toFixed(3);
+  styleRow(tot, 11);
 }
 
 async function generateMeterReport(yearMonth, monthData) {
