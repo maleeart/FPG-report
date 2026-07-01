@@ -57,7 +57,7 @@ export default function FormPage() {
   const date = searchParams.get('date') || today;
   const DRAFT_KEY = `form:${type}:${date}`;
 
-  const [step, setStep] = useState(0); // 0=general, 1=devices, 2=done
+  const [step, setStep] = useState(0); // 0=เลือกอาคาร, 1=ข้อมูลทั่วไป, 2=อุปกรณ์, 3=ยืนยัน
   const [general, setGeneral] = useState({
     inspectionDate: date, building: '', floor: '', inspector: '', model: '', serial: '', mfg: '',
   });
@@ -68,6 +68,7 @@ export default function FormPage() {
   const [prefilledFrom, setPrefilledFrom] = useState(null); // ข้อความรอบที่ดึงมาเติมให้ (แสดงใน step อุปกรณ์)
   const [floorTemplates, setFloorTemplates] = useState([]); // รายการไฟล์เก่าของอาคารนี้ (ล่าสุดต่อชั้น) ให้เลือก
   const [showTemplatePopup, setShowTemplatePopup] = useState(false);
+  const [checkingTemplates, setCheckingTemplates] = useState(false);
   const draftRef = useRef(null);
 
   if (!cfg) return <main style={{ padding: 40 }}>ไม่รู้จักประเภทฟอร์มนี้</main>;
@@ -84,59 +85,69 @@ export default function FormPage() {
     } catch {}
   }, []);
 
-  // เมื่อเลือกอาคาร (และฟอร์มยังว่าง ไม่ทับ draft ที่มีอยู่) เช็คไฟล์เก่าของอาคารนี้ — ตึกเดียวมีได้หลายชั้น
-  // จึงถามให้เลือกเองว่าจะเอา template จากชั้นไหน แทนที่จะเดาให้อัตโนมัติ
-  useEffect(() => {
-    if (!general.building) return;
-    const isEmpty = devices.length === 1 && !devices[0][cfg.idKey] && !devices[0].location;
-    if (!isEmpty) return; // มีข้อมูลอยู่แล้ว ไม่ทับ
-    let cancelled = false;
-    (async () => {
-      try {
-        const { dates } = await fetch('/api/inspections').then(r => r.json());
-        const matches = (dates || [])
-          .filter(x => x.type === type && x.building === general.building)
-          .sort((a, b) => b.date.localeCompare(a.date));
-        // เก็บไฟล์ล่าสุดไว้ต่อชั้นเดียว (ตึกเดียวมีหลายชั้น = หลายไฟล์)
-        const seenFloors = new Set();
-        const byFloor = matches.filter(m => {
-          const key = m.floor || '';
-          if (seenFloors.has(key)) return false;
-          seenFloors.add(key);
-          return true;
-        });
-        if (cancelled || !byFloor.length) return;
+  // กดถัดไปจากหน้าเลือกอาคาร — เช็คไฟล์เก่าของอาคารนี้ก่อน (ตึกเดียวมีได้หลายชั้น = หลายไฟล์)
+  // ถ้าเจอ ให้เลือกเองว่าจะเอา template จากชั้นไหน แทนที่จะเดาให้อัตโนมัติ
+  const handleBuildingNext = async () => {
+    if (!general.building?.trim()) {
+      setValidationError('กรุณาเลือกอาคารก่อน');
+      return;
+    }
+    setValidationError(null);
+    setCheckingTemplates(true);
+    try {
+      const { dates } = await fetch('/api/inspections').then(r => r.json());
+      const matches = (dates || [])
+        .filter(x => x.type === type && x.building === general.building)
+        .sort((a, b) => b.date.localeCompare(a.date));
+      // เก็บไฟล์ล่าสุดไว้ต่อชั้นเดียว (ตึกเดียวมีหลายชั้น = หลายไฟล์)
+      const seenFloors = new Set();
+      const byFloor = matches.filter(m => {
+        const key = m.floor || '';
+        if (seenFloors.has(key)) return false;
+        seenFloors.add(key);
+        return true;
+      });
+      if (byFloor.length) {
         setFloorTemplates(byFloor);
         setShowTemplatePopup(true);
-      } catch {}
-    })();
-    return () => { cancelled = true; };
-  }, [general.building, type]);
+      } else {
+        setStep(1); // ไม่พบไฟล์เก่า ไปกรอกข้อมูลทั่วไปตามปกติ
+      }
+    } catch {
+      setStep(1); // ดึงข้อมูลไม่สำเร็จ ให้กรอกเองตามปกติ
+    } finally {
+      setCheckingTemplates(false);
+    }
+  };
 
   // ผู้ใช้เลือก template จาก popup (หรือเลือก "เริ่มใหม่" → tmpl = null)
   const applyTemplate = async (tmpl) => {
     setShowTemplatePopup(false);
-    if (!tmpl) return;
+    if (!tmpl) { setStep(1); return; } // เริ่มใหม่ → กรอกข้อมูลทั่วไปเอง
     try {
       const rec = await fetch(`/api/inspections?filename=${encodeURIComponent(tmpl.filename)}`).then(r => r.json());
       const prevDevices = rec.records?.devices || [];
       const prevGeneral = rec.records?.general || {};
-      if (!prevDevices.length) return;
-      setDevices(prevDevices.map(d => {
-        const nd = makeDevice(cfg);
-        nd[cfg.idKey] = d[cfg.idKey] || '';
-        nd.location = d.location || '';
-        return nd;
-      }));
       setGeneral(g => ({
         ...g,
-        floor:  g.floor  || tmpl.floor || '',
-        model:  g.model  || prevGeneral.model  || '',
-        serial: g.serial || prevGeneral.serial || '',
-        mfg:    g.mfg    || prevGeneral.mfg    || '',
+        floor:  tmpl.floor || prevGeneral.floor || '',
+        model:  prevGeneral.model  || '',
+        serial: prevGeneral.serial || '',
+        mfg:    prevGeneral.mfg    || '',
       }));
+      if (prevDevices.length) {
+        setDevices(prevDevices.map(d => {
+          const nd = makeDevice(cfg);
+          nd[cfg.idKey] = d[cfg.idKey] || '';
+          nd.location = d.location || '';
+          return nd;
+        }));
+      }
       setPrefilledFrom(`${tmpl.floor ? 'ชั้น ' + tmpl.floor + ' · ' : ''}${tmpl.date}`);
-    } catch {}
+      setStep(2); // ใช้ template แล้ว ข้ามหน้าข้อมูลทั่วไป ไปตรวจอุปกรณ์ได้เลย
+    } catch {
+      setStep(1); // โหลด template ไม่สำเร็จ ให้กรอกเอง
+    }
   };
 
   // autosave draft
@@ -163,6 +174,11 @@ export default function FormPage() {
 
   // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
+    if (!general.inspector?.trim()) {
+      setValidationError('กรุณากรอกชื่อผู้ตรวจสอบก่อน');
+      return;
+    }
+    setValidationError(null);
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -197,7 +213,11 @@ export default function FormPage() {
         <button className="back-btn" onClick={() => step > 0 ? setStep(s => s - 1) : router.push('/')}>‹</button>
         <div>
           <h1 className="title">{cfg.icon} {cfg.title}</h1>
-          <p className="subtitle">{general.inspectionDate || date} · {step === 0 ? 'ข้อมูลทั่วไป' : step === 1 ? `อุปกรณ์ ${devices.length} รายการ` : 'ยืนยัน'}</p>
+          <p className="subtitle">
+            {general.inspectionDate || date}
+            {step > 0 && general.building ? ` · ${general.building}` : ''}
+            {' · '}{step === 0 ? 'เลือกอาคาร' : step === 1 ? 'ข้อมูลทั่วไป' : step === 2 ? `อุปกรณ์ ${devices.length} รายการ` : 'ยืนยัน'}
+          </p>
         </div>
       </header>
 
@@ -220,7 +240,7 @@ export default function FormPage() {
         </div>
       )}
 
-      {/* Step 0 — General Info */}
+      {/* Step 0 — เลือกอาคาร */}
       {step === 0 && (
         <section className="section">
           <Field label="วันที่ตรวจสอบ" value={general.inspectionDate}
@@ -229,42 +249,40 @@ export default function FormPage() {
             <label className="field-label">อาคาร</label>
             <select className="field-select"
               value={general.building}
-              onChange={e => setGeneral(g => ({ ...g, building: e.target.value }))}>
+              onChange={e => { setGeneral(g => ({ ...g, building: e.target.value })); setValidationError(null); }}>
               <option value="">-- เลือกอาคาร --</option>
               {BUILDINGS.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
           </div>
+          {validationError && <p className="validation-err">{validationError}</p>}
+          <button className="btn-next" style={{ background: accentColor }}
+            disabled={checkingTemplates}
+            onClick={handleBuildingNext}>
+            {checkingTemplates ? 'กำลังตรวจสอบข้อมูลเก่า...' : 'ถัดไป'}
+          </button>
+        </section>
+      )}
+
+      {/* Step 1 — ข้อมูลทั่วไป (ข้ามถ้าใช้ template) */}
+      {step === 1 && (
+        <section className="section">
           <Field label="ชั้น" value={general.floor}
             onChange={v => setGeneral(g => ({ ...g, floor: v }))} placeholder="ชั้น / โซน" />
-          <Field label="ผู้ตรวจสอบ" value={general.inspector}
-            onChange={v => setGeneral(g => ({ ...g, inspector: v }))} placeholder="ชื่อผู้ตรวจสอบ" />
           <Field label="Model" value={general.model}
             onChange={v => setGeneral(g => ({ ...g, model: v }))} placeholder="รุ่น" />
           <Field label="Serial Number" value={general.serial}
             onChange={v => setGeneral(g => ({ ...g, serial: v }))} placeholder="S/N" />
           <Field label="MFG" value={general.mfg}
             onChange={v => setGeneral(g => ({ ...g, mfg: v }))} placeholder="ผู้ผลิต" />
-          {validationError && <p className="validation-err">{validationError}</p>}
           <button className="btn-next" style={{ background: accentColor }}
-            onClick={() => {
-              if (!general.inspector?.trim()) {
-                setValidationError('กรุณากรอกชื่อผู้ตรวจสอบก่อน');
-                return;
-              }
-              if (!general.building?.trim()) {
-                setValidationError('กรุณากรอกชื่ออาคารก่อน');
-                return;
-              }
-              setValidationError(null);
-              setStep(1);
-            }}>
+            onClick={() => setStep(2)}>
             ถัดไป → ตรวจสอบอุปกรณ์
           </button>
         </section>
       )}
 
-      {/* Step 1 — Device List */}
-      {step === 1 && (
+      {/* Step 2 — Device List */}
+      {step === 2 && (
         <section className="section">
           {prefilledFrom && (
             <p className="prefill-note">📋 ดึงรายการอุปกรณ์จากรอบล่าสุด ({prefilledFrom}) มาเติมให้ — ตรวจสอบและปรับผลใหม่</p>
@@ -306,14 +324,14 @@ export default function FormPage() {
           )}
 
           <button className="btn-next" style={{ background: accentColor }}
-            onClick={() => setStep(2)}>
+            onClick={() => setStep(3)}>
             ถัดไป → ยืนยัน
           </button>
         </section>
       )}
 
-      {/* Step 2 — Confirm */}
-      {step === 2 && (() => {
+      {/* Step 3 — Confirm */}
+      {step === 3 && (() => {
         const firstField = cfg.fields[0];
         const passCount = devices.filter(d => d[firstField.key] === firstField.opts[0].v).length;
         const failCount = devices.length - passCount;
@@ -324,9 +342,11 @@ export default function FormPage() {
             <h2 className="confirm-title">{cfg.title}</h2>
             <p className="confirm-sub">วันที่ {general.inspectionDate || date}</p>
 
+            <Field label="ผู้ตรวจสอบ" value={general.inspector}
+              onChange={v => { setGeneral(g => ({ ...g, inspector: v })); setValidationError(null); }} placeholder="ชื่อผู้ตรวจสอบ" />
+
             {/* info summary */}
             <div className="confirm-info">
-              <div className="ci-row"><span className="ci-key">ผู้ตรวจสอบ</span><span className="ci-val">{general.inspector || '–'}</span></div>
               <div className="ci-row"><span className="ci-key">อาคาร / ชั้น</span><span className="ci-val">{[general.building, general.floor].filter(Boolean).join(' / ') || '–'}</span></div>
             </div>
 
@@ -364,13 +384,14 @@ export default function FormPage() {
               </div>
             )}
 
+            {validationError && <p className="validation-err">{validationError}</p>}
             {submitError && <p className="error-msg">{submitError}</p>}
             <button className="btn-submit" style={{ background: accentColor }}
               disabled={submitting}
               onClick={handleSubmit}>
               {submitting ? '⏳ กำลังบันทึก...' : '✓ บันทึก'}
             </button>
-            <button className="btn-back-edit" onClick={() => setStep(1)}>‹ แก้ไขรายการ</button>
+            <button className="btn-back-edit" onClick={() => setStep(2)}>‹ แก้ไขรายการ</button>
           </section>
         );
       })()}
