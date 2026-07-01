@@ -1,0 +1,209 @@
+{
+  "date": "2026-06-18",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-18",
+      "building": "ท.0018",
+      "floor": "1",
+      "inspector": "ธนวิชญ์",
+      "model": "SD-651",
+      "serial": "",
+      "mfg": "Notifier"
+    },
+    "devices": [
+      {
+        "location": "โถงทางเข้าอาคาร",
+        "remarks": "",
+        "zone": "1",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องน้ำชายชั้น 1",
+        "remarks": "",
+        "zone": "1",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องน้ำหญิงชั้น 1",
+        "remarks": "",
+        "zone": "1",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องเก็บเอกสาร",
+        "remarks": "",
+        "zone": "2",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องเก็บเครื่องมือ",
+        "remarks": "",
+        "zone": "2",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Training",
+        "remarks": "",
+        "zone": "3",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องทำความสะอาดเครื่องมือ",
+        "remarks": "",
+        "zone": "3",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "โถงทางเดินหลัก",
+        "remarks": "",
+        "zone": "4",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Dimension lab",
+        "remarks": "",
+        "zone": "5",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Mass lab",
+        "remarks": "",
+        "zone": "5",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Torque and force lab",
+        "remarks": "",
+        "zone": "6",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Electric (low grade) lab",
+        "remarks": "",
+        "zone": "7",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "โถงทางเดินห้องแลป",
+        "remarks": "",
+        "zone": "8 ",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "โถงทางเดินหน้าห้องไฟฟ้า",
+        "remarks": "",
+        "zone": "9",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องระบบไฟฟ้า",
+        "remarks": "",
+        "zone": "9",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องครัว",
+        "remarks": "",
+        "zone": "9",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Air Compressor ",
+        "remarks": "",
+        "zone": "10",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Pressure lab",
+        "remarks": "",
+        "zone": "10",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Vibration lab",
+        "remarks": "",
+        "zone": "10",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Airflow lab",
+        "remarks": "",
+        "zone": "11",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Humidity lab",
+        "remarks": "",
+        "zone": "11",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง ห้องทดสอบน้ำมันหม้อแปลง",
+        "remarks": "",
+        "zone": "13",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Flow lab",
+        "remarks": "",
+        "zone": "13",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Liquid flow lab",
+        "remarks": "",
+        "zone": "14",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
