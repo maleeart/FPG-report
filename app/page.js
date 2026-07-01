@@ -393,10 +393,10 @@ function HomePageInner() {
             <div key={b} className="status-row">
               <span className="status-col-b">{b}</span>
               <span className="status-col" title={`${STATUS_LABEL[emer]}${emerDate ? ' · ' + emerDate : ''}`}>
-                {STATUS_BADGE[emer]} <span className="status-days">{emerDate ? `${daysSince(emerDate)}ว` : '-'}</span>
+                {STATUS_BADGE[emer]}
               </span>
               <span className="status-col" title={`${STATUS_LABEL[smoke]}${smokeDate ? ' · ' + smokeDate : ''}`}>
-                {STATUS_BADGE[smoke]} <span className="status-days">{smokeDate ? `${daysSince(smokeDate)}ว` : '-'}</span>
+                {STATUS_BADGE[smoke]}
               </span>
             </div>
           ))}
@@ -728,7 +728,6 @@ function HomePageInner() {
         }
         .status-col-b { flex: 1; font-size: 13px; font-weight: 700; color: var(--ink-primary); }
         .status-col { width: 72px; text-align: center; font-size: 13px; }
-        .status-days { font-size: 11px; color: var(--ink-muted); }
         .status-legend { font-size: 11px; color: var(--ink-muted); margin: 6px 0 0; }
 
         /* ─── History Panel ─── */
