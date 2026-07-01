@@ -282,7 +282,19 @@ function HomePageInner() {
           <span className="card__arrow">›</span>
         </button>
 
-        {/* Card 4 — History */}
+        {/* Card 4 — Meter กฟน. */}
+        <button
+          className="card card--meter"
+          onClick={() => router.push('/meter')}>
+          <span className="card__icon">⚡</span>
+          <div className="card__body">
+            <span className="card__title">Meter กฟน.</span>
+            <span className="card__sub">บันทึกค่ามิเตอร์ไฟฟ้า</span>
+          </div>
+          <span className="card__arrow">›</span>
+        </button>
+
+        {/* Card 5 — History */}
         <button
           className="card card--history"
           onClick={() => setShowHistory(v => !v)}>
@@ -515,6 +527,18 @@ function HomePageInner() {
         .card--smoke .card__title { color: #fff; font-size: 15px; }
         .card--smoke .card__sub   { color: rgba(255,255,255,0.75); }
         .card--smoke .card__arrow { color: rgba(255,255,255,0.7); margin-left: auto; }
+
+        /* Meter กฟน. — amber */
+        .card--meter {
+          background: linear-gradient(135deg, #78350f 0%, #d97706 100%);
+          box-shadow: 0 6px 18px rgba(217,119,6,0.35);
+          min-height: 72px;
+          gap: 12px;
+        }
+        .card--meter .card__icon  { font-size: 26px; }
+        .card--meter .card__title { color: #fff; font-size: 15px; }
+        .card--meter .card__sub   { color: rgba(255,255,255,0.75); }
+        .card--meter .card__arrow { color: rgba(255,255,255,0.7); margin-left: auto; }
 
         /* History — dark */
         .card--history {
