@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 const THAI_MONTHS_SHORT = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -15,6 +16,12 @@ export default function MeterPage() {
     const ym = `${year}-${String(mo).padStart(2, '0')}`;
     return { mo, ym, label: THAI_MONTHS_SHORT[i] };
   });
+
+  // prefetch current month so first tap is instant
+  useEffect(() => {
+    const curYm = `${year}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    router.prefetch(`/meter/${curYm}`);
+  }, []);
 
   return (
     <div className="root">
