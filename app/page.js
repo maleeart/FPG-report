@@ -10,6 +10,40 @@ function fmtMonth(ym) { // "2026-06" → "มิ.ย. 69"
   return `${THAI_MONTHS[parseInt(m) - 1]} ${String(parseInt(y) + 543).slice(2)}`;
 }
 
+const BUILDINGS = [
+  'ท.0006','ท.0007','ท.0008','ท.0009','ท.0010',
+  'ท.0011','ท.0012','ท.0014','ท.0015','ท.0016',
+  'ท.0017','ท.0018','ท.0019','ท.0020','ท.0022',
+  'ท.0023','ท.0026','ท.0027','ท.0028','ท.0029',
+  'ต.0017','ต.0019','ต.0025','ต.0026','ต.0031','ต.0033',
+];
+const FREQ_MONTHS = 3; // smoke & emergency: ทุก 3 เดือน
+
+/** คืน { building → lastDate } สำหรับ type ที่ระบุ */
+function lastDoneByBuilding(dates, type) {
+  const map = {};
+  for (const d of (dates || [])) {
+    if (d.type !== type || !d.building) continue;
+    if (!map[d.building] || d.date > map[d.building]) map[d.building] = d.date;
+  }
+  return map;
+}
+
+/** daysDiff ระหว่าง date string กับวันนี้ */
+function daysSince(dateStr) {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
+
+/** status: 'ok' | 'due' | 'overdue' | 'never' */
+function getStatus(lastDate) {
+  if (!lastDate) return 'never';
+  const days = daysSince(lastDate);
+  const limit = FREQ_MONTHS * 30;
+  if (days > limit) return 'overdue';
+  if (days > limit - 14) return 'due'; // เตือนล่วงหน้า 2 สัปดาห์
+  return 'ok';
+}
+
 function HomePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -315,6 +349,44 @@ function HomePageInner() {
 
       </main>
 
+      {/* ── Building Status Panel ── */}
+      {dates && dates.length > 0 && (() => {
+        const smokeMap = lastDoneByBuilding(dates, 'smoke');
+        const emerMap  = lastDoneByBuilding(dates, 'emergency');
+        const rows = BUILDINGS.map(b => ({
+          b,
+          smoke: getStatus(smokeMap[b]),
+          emer:  getStatus(emerMap[b]),
+          smokeDate: smokeMap[b],
+          emerDate:  emerMap[b],
+        })).filter(r => r.smoke !== 'ok' || r.emer !== 'ok');
+        if (!rows.length) return null;
+        const badge = { overdue: '🔴', due: '🟡', never: '⚫', ok: '🟢' };
+        const label = { overdue: 'เกินกำหนด', due: 'ใกล้ครบ', never: 'ยังไม่เคยบันทึก', ok: 'ปกติ' };
+        return (
+          <section className="status-panel">
+            <h3 className="status-title">⚠ ต้องดำเนินการ</h3>
+            <div className="status-header-row">
+              <span className="status-col-b"></span>
+              <span className="status-col">💡 Emer</span>
+              <span className="status-col">🚨 Smoke</span>
+            </div>
+            {rows.map(({ b, smoke, emer, smokeDate, emerDate }) => (
+              <div key={b} className="status-row">
+                <span className="status-col-b">{b}</span>
+                <span className="status-col" title={`${label[emer]}${emerDate ? ' · ' + emerDate : ''}`}>
+                  {badge[emer]} <span className="status-days">{emerDate ? `${daysSince(emerDate)}ว` : '-'}</span>
+                </span>
+                <span className="status-col" title={`${label[smoke]}${smokeDate ? ' · ' + smokeDate : ''}`}>
+                  {badge[smoke]} <span className="status-days">{smokeDate ? `${daysSince(smokeDate)}ว` : '-'}</span>
+                </span>
+              </div>
+            ))}
+            <p className="status-legend">🟢 ปกติ · 🟡 ใกล้ครบ · 🔴 เกินกำหนด · ⚫ ยังไม่บันทึก</p>
+          </section>
+        );
+      })()}
+
       {/* ── History panel ── */}
       {showHistory && (
         <section className="history-panel">
@@ -592,6 +664,43 @@ function HomePageInner() {
           padding: 2px 8px;
           letter-spacing: 0.04em;
         }
+
+        /* ─── Building Status Panel ─── */
+        .status-panel {
+          margin: 14px 16px 0;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-hairline);
+          border-radius: 16px;
+          overflow: hidden;
+          padding: 12px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .status-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--status-warn);
+          margin: 0 0 8px;
+        }
+        .status-header-row, .status-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 3px 0;
+        }
+        .status-header-row {
+          border-bottom: 1px solid var(--border-hairline);
+          padding-bottom: 6px;
+          margin-bottom: 2px;
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--ink-muted);
+        }
+        .status-col-b { flex: 1; font-size: 13px; font-weight: 700; color: var(--ink-primary); }
+        .status-col { width: 72px; text-align: center; font-size: 13px; }
+        .status-days { font-size: 11px; color: var(--ink-muted); }
+        .status-legend { font-size: 11px; color: var(--ink-muted); margin: 6px 0 0; }
 
         /* ─── History Panel ─── */
         .history-panel {

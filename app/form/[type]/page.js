@@ -3,6 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
+const BUILDINGS = [
+  'ท.0006','ท.0007','ท.0008','ท.0009','ท.0010',
+  'ท.0011','ท.0012','ท.0014','ท.0015','ท.0016',
+  'ท.0017','ท.0018','ท.0019','ท.0020','ท.0022',
+  'ท.0023','ท.0026','ท.0027','ท.0028','ท.0029',
+  'ต.0017','ต.0019','ต.0025','ต.0026','ต.0031','ต.0033',
+];
+
 // ─── Config per type ──────────────────────────────────────────────────────────
 const FORM_CONFIG = {
   emergency: {
@@ -140,8 +148,15 @@ export default function FormPage() {
         <section className="section">
           <Field label="วันที่ตรวจสอบ" value={general.inspectionDate}
             onChange={v => setGeneral(g => ({ ...g, inspectionDate: v }))} type="date" />
-          <Field label="ชื่ออาคาร" value={general.building}
-            onChange={v => setGeneral(g => ({ ...g, building: v }))} placeholder="อาคาร ..." />
+          <div className="field-row">
+            <label className="field-label">อาคาร</label>
+            <select className="field-select"
+              value={general.building}
+              onChange={e => setGeneral(g => ({ ...g, building: e.target.value }))}>
+              <option value="">-- เลือกอาคาร --</option>
+              {BUILDINGS.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </div>
           <Field label="ชั้น" value={general.floor}
             onChange={v => setGeneral(g => ({ ...g, floor: v }))} placeholder="ชั้น / โซน" />
           <Field label="ผู้ตรวจสอบ" value={general.inspector}
@@ -291,6 +306,7 @@ export default function FormPage() {
 
         .field-row { display: flex; flex-direction: column; gap: 4px; }
         .field-label { font-size: 12px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+        .field-select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--border-strong); background: var(--bg-surface-raised); color: var(--ink-primary); font-size: 15px; font-weight: 600; appearance: auto; }
 
         .toggle-group { display: flex; gap: 8px; }
         .toggle-btn { flex: 1; padding: 8px 4px; border: 1.5px solid var(--border-strong); border-radius: 10px; background: var(--bg-surface-raised); font-size: 13px; font-weight: 600; cursor: pointer; color: var(--ink-secondary); transition: all 0.12s; }
