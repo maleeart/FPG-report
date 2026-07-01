@@ -6,13 +6,19 @@ export const runtime = 'nodejs';
 
 const TYPE_LABELS = { emergency: 'Emergency', smoke: 'Smoke' };
 
+// ตัดอักขระที่ใช้ในชื่อไฟล์ไม่ได้ออก
+const sanitize = s => String(s || '').replace(/[\\/:*?"<>|]/g, '').trim();
+
 async function buildResponse(type, date, general, devices) {
   const buffer = await generateListReport(type, { date, general, devices });
   const label  = TYPE_LABELS[type] || type.toUpperCase();
+  const building = sanitize(general?.building);
+  const floor    = sanitize(general?.floor);
+  const parts = [`${label}_report_${date}`, building, floor].filter(Boolean);
   return new NextResponse(buffer, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': `attachment; filename="${label}_report_${date}.xlsx"`,
+      'Content-Disposition': `attachment; filename="${parts.join('_')}.xlsx"`,
     },
   });
 }
