@@ -1,0 +1,185 @@
+{
+  "date": "2026-05-28",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-05-28",
+      "building": "ท.0019",
+      "floor": "1",
+      "inspector": "ธนวิชญ์",
+      "model": "SD-651",
+      "serial": "",
+      "mfg": "Notifier"
+    },
+    "devices": [
+      {
+        "location": "ห้อง Generator ",
+        "remarks": "",
+        "zone": "101",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องแม่บ้าน",
+        "remarks": "",
+        "zone": "102",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องทางเดินหน้าห้องปั๊มน้ำ",
+        "remarks": "",
+        "zone": "103",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องเก็บของ",
+        "remarks": "",
+        "zone": "104",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องสารสะอาด",
+        "remarks": "",
+        "zone": "105",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง Pump ",
+        "remarks": "",
+        "zone": "106",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องแบตเตอรี่",
+        "remarks": "",
+        "zone": "107",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องประชุมสาย",
+        "remarks": "",
+        "zone": "108",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องระบบไฟฟ้า",
+        "remarks": "",
+        "zone": "109",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องเก็บของ",
+        "remarks": "",
+        "zone": "110",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องน้ำชาย",
+        "remarks": "",
+        "zone": "111",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องน้ำหญิง",
+        "remarks": "",
+        "zone": "112",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "โถงทางเข้าฝั่งขวา",
+        "remarks": "",
+        "zone": "113",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ทางหนีไฟ",
+        "remarks": "",
+        "zone": "114",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "โถงหน้าลิฟท์",
+        "remarks": "",
+        "zone": "115",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "หน้าห้องเซิร์ฟเวอร์",
+        "remarks": "",
+        "zone": "116",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "หลังห้องเซิร์ฟเวอร์",
+        "remarks": "",
+        "zone": "117",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องระบบควบคุม",
+        "remarks": "",
+        "zone": "118",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "หน้าประตูหนีไฟ",
+        "remarks": "",
+        "zone": "119",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "หน้าลิฟท์",
+        "remarks": "",
+        "zone": "120",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ประตูทางเข้าอาคาร",
+        "remarks": "",
+        "zone": "121",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
