@@ -1,0 +1,14 @@
+{
+  "name": "Veri — Facility Inspection",
+  "short_name": "Veri",
+  "description": "ระบบบันทึกการตรวจสอบอุปกรณ์ EGAT ไทรน้อย",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c1220",
+  "theme_color": "#0c1220",
+  "icons": [
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
