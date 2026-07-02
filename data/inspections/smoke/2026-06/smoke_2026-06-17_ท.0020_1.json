@@ -1,0 +1,169 @@
+{
+  "date": "2026-06-17",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-17",
+      "building": "ท.0020",
+      "floor": "1",
+      "inspector": "ธนวิชญ์",
+      "model": "SD-651",
+      "serial": "",
+      "mfg": "Notifier"
+    },
+    "devices": [
+      {
+        "location": "ห้อง 101 ห้องสำนักงาน",
+        "remarks": "",
+        "zone": "1",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 102 ห้องระบบไฟฟ้า",
+        "remarks": "",
+        "zone": "2",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 103 ห้องเซิอร์เวอร์",
+        "remarks": "",
+        "zone": "3",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 104 ห้องน้ำคนพิการ",
+        "remarks": "",
+        "zone": "4",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 105 ห้องเก็บของ",
+        "remarks": "",
+        "zone": "5",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 106 ห้องน้ำหญิง",
+        "remarks": "",
+        "zone": "6",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 107 ห้องน้ำชาย",
+        "remarks": "",
+        "zone": "7",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 108 ห้องประชุมชั้น 1",
+        "remarks": "",
+        "zone": "8",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 109 ห้องกอง",
+        "remarks": "",
+        "zone": "9",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 110 ห้องอาหาร",
+        "remarks": "",
+        "zone": "10",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 111 ห้องแม่บ้าน",
+        "remarks": "",
+        "zone": "11",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 112 ห้องอบรม",
+        "remarks": "",
+        "zone": "112",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 113 โถงหน้าลิฟต์",
+        "remarks": "",
+        "zone": "113",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 114 โถงทางเข้าอาคาร",
+        "remarks": "",
+        "zone": "114",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 115 ประตูทางเข้าอาคาร",
+        "remarks": "",
+        "zone": "115",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 116 หน้าห้องประชุมราชพฤกษ์",
+        "remarks": "",
+        "zone": "116",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 117 ประตูหนีไฟ",
+        "remarks": "",
+        "zone": "117",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 118 ห้องประชุมราชพฤกษ์",
+        "remarks": "",
+        "zone": "118",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 119 หลังห้องประชุมราชพฤกษ์",
+        "remarks": "",
+        "zone": "119",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
