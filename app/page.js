@@ -10,6 +10,28 @@ function fmtMonth(ym) { // "2026-06" → "มิ.ย. 69"
   return `${THAI_MONTHS[parseInt(m) - 1]} ${String(parseInt(y) + 543).slice(2)}`;
 }
 
+// วันศุกร์ของ ISO week (ช่างจด RAW ทุกเช้าวันศุกร์)
+function isoWeekToFriday(year, week) {
+  const simple = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+  const dow = simple.getUTCDay();
+  const monday = new Date(simple);
+  monday.setUTCDate(dow <= 4 ? simple.getUTCDate() - dow + 1 : simple.getUTCDate() + 8 - dow);
+  const fri = new Date(monday);
+  fri.setUTCDate(monday.getUTCDate() + 4);
+  return fri;
+}
+// "2026-W26" → { week, y:'2026', m:'06', label:'26 มิ.ย. 2569' }
+function weekInfo(week) {
+  const [wy, wn] = week.split('-W').map(Number);
+  const d = isoWeekToFriday(wy, wn);
+  return {
+    week,
+    y: String(d.getUTCFullYear()),
+    m: String(d.getUTCMonth() + 1).padStart(2, '0'),
+    label: `${d.getUTCDate()} ${THAI_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear() + 543}`,
+  };
+}
+
 const BUILDINGS = [
   'ท.0006','ท.0007','ท.0008','ท.0009','ท.0010',
   'ท.0011','ท.0012','ท.0014','ท.0015','ท.0016',
@@ -61,7 +83,8 @@ function HomePageInner() {
   const [showHistory, setShowHistory] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
   const [openGroups, setOpenGroups] = useState(new Set(['fpg', 'emergency', 'smoke']));
-  const [selectedMonth, setSelectedMonth] = useState(null);   // "2026-06" | null = ทั้งหมด
+  const [selectedYear, setSelectedYear] = useState(null);     // "2026" | null = ยังไม่ตั้งค่า
+  const [selectedMonth, setSelectedMonth] = useState('');     // "01".."12" | '' = ทั้งปี
   const [selectedBuilding, setSelectedBuilding] = useState(''); // '' = ทั้งหมด
   const [adminMode, setAdminMode] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -78,25 +101,38 @@ function HomePageInner() {
   const today = new Date().toISOString().slice(0, 10);
   const SESSION_KEY = `session:${today}`;
 
-  // available months & buildings จากข้อมูลทั้งหมด
-  const availableMonths = useMemo(() => {
-    const s = new Set((dates || []).map(d => d.date.slice(0, 7)).filter(Boolean));
-    return [...s].sort().reverse();
-  }, [dates]);
+  // building-meter weeks → ข้อมูลวันที่ (คำนวณจาก ISO week ไม่ต้องโหลด CSV)
+  const weekRows = useMemo(() => weeks.map(weekInfo), [weeks]);
+
+  // ปีที่มีข้อมูล (รวมทั้ง inspections และ building-meter)
+  const availableYears = useMemo(() => {
+    const s = new Set();
+    (dates || []).forEach(d => s.add(d.date.slice(0, 4)));
+    weekRows.forEach(w => s.add(w.y));
+    return [...s].filter(Boolean).sort().reverse();
+  }, [dates, weekRows]);
 
   const availableBuildings = useMemo(() => {
     const s = new Set((dates || []).map(d => d.building).filter(Boolean));
     return [...s].sort();
   }, [dates]);
 
-  // filtered list
+  // filtered inspections (ปี + เดือน + อาคาร)
   const filteredDates = useMemo(() => {
     return (dates || []).filter(d => {
-      const mOk = !selectedMonth || d.date.startsWith(selectedMonth);
+      const yOk = !selectedYear   || d.date.slice(0, 4) === selectedYear;
+      const mOk = !selectedMonth  || d.date.slice(5, 7) === selectedMonth;
       const bOk = !selectedBuilding || d.building === selectedBuilding;
-      return mOk && bOk;
+      return yOk && mOk && bOk;
     });
-  }, [dates, selectedMonth, selectedBuilding]);
+  }, [dates, selectedYear, selectedMonth, selectedBuilding]);
+
+  // filtered building-meter weeks (ปี + เดือน)
+  const filteredWeeks = useMemo(() => {
+    return weekRows.filter(w =>
+      (!selectedYear || w.y === selectedYear) && (!selectedMonth || w.m === selectedMonth)
+    );
+  }, [weekRows, selectedYear, selectedMonth]);
 
   const statusRows = useMemo(() => {
     if (!dates) return [];
@@ -111,12 +147,12 @@ function HomePageInner() {
     })).filter(r => r.smoke !== 'ok' || r.emer !== 'ok');
   }, [dates]);
 
-  // default selectedMonth = เดือนล่าสุดที่มีข้อมูล (ตั้งค่าครั้งเดียวหลังโหลด)
+  // default selectedYear = ปีล่าสุดที่มีข้อมูล (ตั้งค่าครั้งเดียวหลังโหลด)
   useEffect(() => {
-    if (availableMonths.length > 0 && selectedMonth === null) {
-      setSelectedMonth(availableMonths[0]);
+    if (availableYears.length > 0 && selectedYear === null) {
+      setSelectedYear(availableYears[0]);
     }
-  }, [availableMonths]);
+  }, [availableYears]);
 
   useEffect(() => {
     try { if (localStorage.getItem(SESSION_KEY)) setHasDraft(true); } catch {}
@@ -126,6 +162,7 @@ function HomePageInner() {
     router.prefetch('/form/emergency');
     router.prefetch('/form/smoke');
     router.prefetch('/meter');
+    router.prefetch('/building-meter');
   }, []);
 
   useEffect(() => {
@@ -343,7 +380,7 @@ function HomePageInner() {
         {/* Card 4b — Meter อาคาร (เปิดฟอร์มบันทึกของช่างบน GitHub Pages) */}
         <button
           className="card card--bmeter"
-          onClick={() => window.open('https://maleeart.github.io/Energy-Dashboard/docs/meter_form.html', '_blank')}>
+          onClick={() => router.push('/building-meter')}>
           <span className="card__icon">🏢</span>
           <div className="card__body">
             <span className="card__title">Meter อาคาร</span>
@@ -410,19 +447,30 @@ function HomePageInner() {
       {showHistory && (
         <section className="history-panel">
           {githubOk === false && <p className="history-empty">⚠ ต้องตั้งค่า GitHub token ก่อน</p>}
-          {dates?.length === 0 && <p className="history-empty">ยังไม่มีประวัติ</p>}
+          {dates?.length === 0 && weekRows.length === 0 && <p className="history-empty">ยังไม่มีประวัติ</p>}
 
-          {dates && dates.length > 0 && (
+          {(dates?.length > 0 || weekRows.length > 0) && (
             <>
               <div className="filter-row">
                 <div className="filter-col">
+                  <label className="filter-label">ปี</label>
+                  <select className="filter-select"
+                    value={selectedYear || ''}
+                    onChange={e => setSelectedYear(e.target.value || null)}>
+                    <option value="">ทั้งหมด</option>
+                    {availableYears.map(y => (
+                      <option key={y} value={y}>{parseInt(y) + 543}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="filter-col">
                   <label className="filter-label">เดือน</label>
                   <select className="filter-select"
-                    value={selectedMonth || ''}
-                    onChange={e => setSelectedMonth(e.target.value || null)}>
-                    <option value="">ทั้งหมด</option>
-                    {availableMonths.map(ym => (
-                      <option key={ym} value={ym}>{fmtMonth(ym)}</option>
+                    value={selectedMonth}
+                    onChange={e => setSelectedMonth(e.target.value)}>
+                    <option value="">ทั้งปี</option>
+                    {THAI_MONTHS.map((mo, i) => (
+                      <option key={i} value={String(i + 1).padStart(2, '0')}>{mo}</option>
                     ))}
                   </select>
                 </div>
@@ -441,8 +489,9 @@ function HomePageInner() {
                 )}
               </div>
               <p className="filter-result">
-                พบ {filteredDates.length} รายการ
-                {selectedMonth ? ` · ${fmtMonth(selectedMonth)}` : ''}
+                พบ {filteredDates.length + filteredWeeks.length} รายการ
+                {selectedYear ? ` · ปี ${parseInt(selectedYear) + 543}` : ''}
+                {selectedMonth ? ` · ${THAI_MONTHS[parseInt(selectedMonth) - 1]}` : ''}
                 {selectedBuilding ? ` · ${selectedBuilding}` : ''}
               </p>
             </>
@@ -508,24 +557,24 @@ function HomePageInner() {
             );
           })}
 
-          {/* Meter อาคาร — รายสัปดาห์จาก Energy-Dashboard (คนละ repo, ไม่มี filter เดือน/อาคาร) */}
-          {weeks.length > 0 && (
+          {/* Meter อาคาร — รายสัปดาห์จาก Energy-Dashboard (แสดงวันที่จด = วันศุกร์ของสัปดาห์) */}
+          {filteredWeeks.length > 0 && (
             <div className="hist-group">
               <button className="hist-group-hd" onClick={() => toggleGroup('building-meter')}
                 style={{ borderLeft: '4px solid #6366f1' }}>
                 <span className="hist-group-icon">🏢</span>
                 <span className="hist-group-label">Meter อาคาร</span>
-                <span className="hist-group-count">{weeks.length}</span>
+                <span className="hist-group-count">{filteredWeeks.length}</span>
                 <span className="hist-group-arrow">{openGroups.has('building-meter') ? '⌄' : '›'}</span>
               </button>
-              {openGroups.has('building-meter') && weeks.map(w => (
-                <div key={w} className="hist-row">
+              {openGroups.has('building-meter') && filteredWeeks.map(({ week, label }) => (
+                <div key={week} className="hist-row">
                   <div className="hist-info">
-                    <span className="hist-location">{w}</span>
-                    <span className="hist-date">สัปดาห์ {w.split('-W')[1]} · ปี {w.split('-W')[0]}</span>
+                    <span className="hist-location">{label}</span>
+                    <span className="hist-date">{week}</span>
                   </div>
                   <div className="hist-actions">
-                    <button className="btn-dl" onClick={() => { window.location.href = `/api/export-building-meter?week=${w}`; }}>
+                    <button className="btn-dl" onClick={() => { window.location.href = `/api/export-building-meter?week=${week}`; }}>
                       ⬇︎ Excel
                     </button>
                   </div>
