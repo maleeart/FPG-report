@@ -1,0 +1,25 @@
+{
+  "date": "2026-07-02",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-07-02",
+      "building": "ท.0022",
+      "floor": "ไม่มี",
+      "inspector": "ธนวิชญ์",
+      "model": "",
+      "serial": "",
+      "mfg": ""
+    },
+    "devices": [
+      {
+        "location": "",
+        "remarks": "ไม่มี",
+        "zone": "",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
