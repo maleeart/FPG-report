@@ -102,10 +102,10 @@
       },
       {
         "location": "ห้อง 312 ห้องอาหาร",
-        "remarks": "Smoke/Heat Detector อุปกรณ์ตรวจจับความร้อน",
+        "remarks": "",
         "zone": "12",
         "externalCondition": "normal",
-        "cleaned": "no",
+        "cleaned": "yes",
         "workingCondition": "normal"
       },
       {
