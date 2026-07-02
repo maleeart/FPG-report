@@ -1,0 +1,137 @@
+{
+  "date": "2026-06-17",
+  "type": "smoke",
+  "records": {
+    "general": {
+      "inspectionDate": "2026-06-17",
+      "building": "ท.0020",
+      "floor": "2",
+      "inspector": "ธนวิชญ์",
+      "model": "SD-651",
+      "serial": "",
+      "mfg": "Notifier"
+    },
+    "devices": [
+      {
+        "location": "ห้อง 201 Pull Station ฝั่งขวาทางประตูหนีไฟ",
+        "remarks": "",
+        "zone": "1",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 202 โถงหน้าลิฟต์",
+        "remarks": "",
+        "zone": "2",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 203 ห้องอบรม",
+        "remarks": "",
+        "zone": "3",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 204 ห้องอบรม",
+        "remarks": "",
+        "zone": "4",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 205 โถงบันได",
+        "remarks": "",
+        "zone": "5",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 206 ห้องน้ำคนพิการ",
+        "remarks": "",
+        "zone": "6",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 207 ห้องเก็บของ",
+        "remarks": "",
+        "zone": "7",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 208 ห้องน้ำหญิง",
+        "remarks": "",
+        "zone": "8",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 209 ห้องน้ำชาย",
+        "remarks": "",
+        "zone": "9",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 210 ห้องอบรม",
+        "remarks": "",
+        "zone": "10",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 211 ห้องอบรม",
+        "remarks": "",
+        "zone": "11",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 212 ห้องอบรม",
+        "remarks": "",
+        "zone": "12",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 213 ห้องอาหาร",
+        "remarks": "",
+        "zone": "13",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 214 ห้องควบคุมระบบเสียงห้องประชุม",
+        "remarks": "",
+        "zone": "14",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้อง 215  Pull Station ฝั่งซ้ายทางประตูหนีไฟ",
+        "remarks": "",
+        "zone": "15",
+        "externalCondition": "normal",
+        "cleaned": "yes",
+        "workingCondition": "normal"
+      }
+    ]
+  }
+}
