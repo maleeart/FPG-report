@@ -86,10 +86,10 @@
       },
       {
         "location": "ห้อง 110 ห้องอาหาร",
-        "remarks": "Smoke/Heat Detector อุปกรณ์ตรวจจับความร้อน",
+        "remarks": "",
         "zone": "10",
         "externalCondition": "normal",
-        "cleaned": "no",
+        "cleaned": "yes",
         "workingCondition": "normal"
       },
       {
