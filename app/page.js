@@ -83,7 +83,7 @@ function HomePageInner() {
   const [hasDraft, setHasDraft] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
-  const [openGroups, setOpenGroups] = useState(new Set(['fpg', 'emergency', 'smoke']));
+  const [openGroups, setOpenGroups] = useState(new Set());
   const [selectedYear, setSelectedYear] = useState(null);     // "2026" | null = ยังไม่ตั้งค่า
   const [selectedMonth, setSelectedMonth] = useState('');     // "01".."12" | '' = ทั้งปี
   const [selectedBuilding, setSelectedBuilding] = useState(''); // '' = ทั้งหมด
