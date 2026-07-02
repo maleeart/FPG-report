@@ -21,7 +21,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องพักพนักงาน",
+        "location": "ห้องพักพนักงาน ชั้น1",
         "remarks": "",
         "zone": "2",
         "externalCondition": "normal",
@@ -29,7 +29,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องเปลี่ยนชุดพนักงาน",
+        "location": "ห้องเปลี่ยนชุดพนักงาน ชั้น1",
         "remarks": "",
         "zone": "2",
         "externalCondition": "normal",
@@ -37,7 +37,15 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องอาหาร",
+        "location": "ห้องอาหาร ชั้น1",
+        "remarks": "Smoke/Heat Detector อุปกรณ์ตรวจจับความร้อน",
+        "zone": "2",
+        "externalCondition": "normal",
+        "cleaned": "no",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องเก็บอุปกรณ์ ชั้น1",
         "remarks": "",
         "zone": "2",
         "externalCondition": "normal",
@@ -45,7 +53,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องเก็บอุปกรณ์",
+        "location": "ห้องเก็บน้ำมัน ชั้น1",
         "remarks": "",
         "zone": "2",
         "externalCondition": "normal",
@@ -53,7 +61,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องเก็บน้ำมัน",
+        "location": "ห้องกิจกรรม ชั้น1",
         "remarks": "",
         "zone": "2",
         "externalCondition": "normal",
@@ -61,15 +69,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องกิจกรรม",
-        "remarks": "",
-        "zone": "2",
-        "externalCondition": "normal",
-        "cleaned": "yes",
-        "workingCondition": "normal"
-      },
-      {
-        "location": "ห้องน้ำชาย",
+        "location": "ห้องน้ำชาย ชั้น1",
         "remarks": "",
         "zone": "3",
         "externalCondition": "normal",
@@ -77,7 +77,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องน้ำหญิง",
+        "location": "ห้องน้ำหญิง ชั้น1",
         "remarks": "",
         "zone": "3",
         "externalCondition": "normal",
@@ -85,7 +85,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องระบบไฟฟ้า",
+        "location": "ห้องระบบไฟฟ้า ชั้น1",
         "remarks": "",
         "zone": "3",
         "externalCondition": "normal",
@@ -93,7 +93,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องเก็บยางรถจักรกลหนัก",
+        "location": "ห้องเก็บยางรถจักรกลหนัก ชั้น1",
         "remarks": "",
         "zone": "3",
         "externalCondition": "normal",
@@ -101,7 +101,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องแบตเตอร์รี่",
+        "location": "ห้องแบตเตอร์รี่ ชั้น1",
         "remarks": "",
         "zone": "3",
         "externalCondition": "normal",
@@ -109,7 +109,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องสำนักงาน",
+        "location": "ห้องสำนักงาน ชั้น2",
         "remarks": "",
         "zone": "4",
         "externalCondition": "normal",
@@ -118,6 +118,14 @@
       },
       {
         "location": "ห้องอาหาร ชั้น2 ",
+        "remarks": "Smoke/Heat Detector อุปกรณ์ตรวจจับความร้อน",
+        "zone": "4",
+        "externalCondition": "normal",
+        "cleaned": "no",
+        "workingCondition": "normal"
+      },
+      {
+        "location": "ห้องประชุม ชั้น2",
         "remarks": "",
         "zone": "4",
         "externalCondition": "normal",
@@ -125,15 +133,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องประชุม",
-        "remarks": "",
-        "zone": "4",
-        "externalCondition": "normal",
-        "cleaned": "yes",
-        "workingCondition": "normal"
-      },
-      {
-        "location": "ห้องเก็บเอกสาร",
+        "location": "ห้องเก็บเอกสาร ชั้น2",
         "remarks": "",
         "zone": "4",
         "externalCondition": "normal",
@@ -149,7 +149,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ห้องสมุด",
+        "location": "ห้องสมุด ชั้น2",
         "remarks": "",
         "zone": "5",
         "externalCondition": "normal",
