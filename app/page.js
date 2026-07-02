@@ -253,6 +253,9 @@ function HomePageInner() {
           <p className="subtitle">ระบบบันทึกการตรวจสอบ</p>
         </div>
         <div className="user-box">
+          {session?.user?.image && (
+            <img src={session.user.image} alt="" className="avatar" referrerPolicy="no-referrer" />
+          )}
           <span className={`role-chip role-chip--${role}`}>
             {isAdmin ? '🔓 admin' : role === 'user' ? '✎ ผู้ใช้งาน' : '👁 ผู้เยี่ยมชม'}
           </span>
@@ -574,6 +577,7 @@ function HomePageInner() {
           border-bottom: 1px solid var(--border-hairline);
         }
         .logo { border-radius: 10px; flex-shrink: 0; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-strong); flex-shrink: 0; }
         .title {
           font-size: 20px;
           font-weight: 800;
