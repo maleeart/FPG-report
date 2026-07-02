@@ -180,23 +180,8 @@ function HomePageInner() {
       window.location.href = `/api/export-list?${params}`;
       return;
     }
-    // FPG uses POST (needs session data)
-    setDownloading(filename || date);
-    fetch('/api/export-combined', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date, type, filename, building, floor }),
-    }).then(res => {
-      if (!res.ok) return res.json().catch(() => ({})).then(e => { alert(e.error || 'ดาวน์โหลดไม่สำเร็จ'); });
-      return res.blob().then(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `FPG_report_${date}.xlsx`;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-      });
-    }).catch(err => alert('เกิดข้อผิดพลาด: ' + err.message))
-      .finally(() => setDownloading(null));
+    // FPG → GET endpoint (mobile-compatible, same pattern as emergency/smoke)
+    window.location.href = `/api/export-combined?date=${date}`;
   };
 
   // ── download PDF (xlsx → LibreOffice service → pdf) ──────────────────────

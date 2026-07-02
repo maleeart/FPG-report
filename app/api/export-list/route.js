@@ -15,10 +15,12 @@ async function buildResponse(type, date, general, devices) {
   const building = sanitize(general?.building);
   const floor    = sanitize(general?.floor);
   const parts = [`${label}_report_${date}`, building, floor].filter(Boolean);
+  const fname = parts.join('_') + '.xlsx';
+  const asciiName = fname.replace(/[^\x20-\x7E]/g, '_');
   return new NextResponse(buffer, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': `attachment; filename="${parts.join('_')}.xlsx"`,
+      'Content-Disposition': `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(fname)}`,
     },
   });
 }
