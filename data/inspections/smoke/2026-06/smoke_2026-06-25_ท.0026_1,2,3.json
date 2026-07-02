@@ -54,10 +54,10 @@
       },
       {
         "location": "ห้องอาหาร ชั้น1",
-        "remarks": "",
+        "remarks": "Smoke/Heat Detector อุปกรณ์ตรวจจับความร้อน",
         "zone": "3",
         "externalCondition": "normal",
-        "cleaned": "yes",
+        "cleaned": "no",
         "workingCondition": "normal"
       },
       {
@@ -109,7 +109,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ทางเดิน ชั้น2",
+        "location": "โถงทางเดิน ชั้น2",
         "remarks": "",
         "zone": "6",
         "externalCondition": "normal",
@@ -142,10 +142,10 @@
       },
       {
         "location": "ห้องอาหาร ชั้น2",
-        "remarks": "",
+        "remarks": "Smoke/Heat Detector อุปกรณ์ตรวจจับความร้อน",
         "zone": "7",
         "externalCondition": "normal",
-        "cleaned": "yes",
+        "cleaned": "no",
         "workingCondition": "normal"
       },
       {
@@ -206,10 +206,10 @@
       },
       {
         "location": "ห้องอาหาร ชั้น3",
-        "remarks": "",
+        "remarks": "Smoke/Heat Detector อุปกรณ์ตรวจจับความร้อน",
         "zone": "9",
         "externalCondition": "normal",
-        "cleaned": "yes",
+        "cleaned": "no",
         "workingCondition": "normal"
       },
       {
@@ -229,7 +229,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "",
+        "location": "ห้องสำนักงาน",
         "remarks": "",
         "zone": "9",
         "externalCondition": "normal",
@@ -245,7 +245,7 @@
         "workingCondition": "normal"
       },
       {
-        "location": "ทางเดิน ชั้น3",
+        "location": "โถงทางเดิน ชั้น3",
         "remarks": "",
         "zone": "11",
         "externalCondition": "normal",
