@@ -13,6 +13,9 @@ out/
 # Test output files
 OUTPUT_TEST_*.xlsx
 
+# Excel lock files
+~$*
+
 # Inspection data (เก็บใน data repo แยก ไม่ใช่ code repo)
 data/inspections/
 

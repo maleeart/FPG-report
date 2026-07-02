@@ -52,6 +52,7 @@ function HomePageInner() {
   const searchParams = useSearchParams();
 
   const [dates, setDates] = useState(null);
+  const [weeks, setWeeks] = useState([]); // Meter อาคาร: สัปดาห์จาก Energy-Dashboard/forms
   const [githubOk, setGithubOk] = useState(null);
   const [githubError, setGithubError] = useState('');
   const [downloading, setDownloading] = useState(null);
@@ -136,6 +137,10 @@ function HomePageInner() {
         if (d.error && !d.githubConfigured) setGithubError(d.error);
       })
       .catch(() => { setDates([]); setGithubOk(false); setGithubError('ไม่สามารถเชื่อมต่อ API ได้'); });
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/building-meter-weeks').then(r => r.json()).then(d => setWeeks(d.weeks || [])).catch(() => {});
   }, []);
 
   // ── admin ────────────────────────────────────────────────────────────────
@@ -335,6 +340,18 @@ function HomePageInner() {
           <span className="card__arrow">›</span>
         </button>
 
+        {/* Card 4b — Meter อาคาร (เปิดฟอร์มบันทึกของช่างบน GitHub Pages) */}
+        <button
+          className="card card--bmeter"
+          onClick={() => window.open('https://maleeart.github.io/Energy-Dashboard/docs/meter_form.html', '_blank')}>
+          <span className="card__icon">🏢</span>
+          <div className="card__body">
+            <span className="card__title">Meter อาคาร</span>
+            <span className="card__sub">บันทึกค่ามิเตอร์รายอาคาร</span>
+          </div>
+          <span className="card__arrow">›</span>
+        </button>
+
         {/* Card 5 — History */}
         <button
           className="card card--history"
@@ -490,6 +507,32 @@ function HomePageInner() {
               </div>
             );
           })}
+
+          {/* Meter อาคาร — รายสัปดาห์จาก Energy-Dashboard (คนละ repo, ไม่มี filter เดือน/อาคาร) */}
+          {weeks.length > 0 && (
+            <div className="hist-group">
+              <button className="hist-group-hd" onClick={() => toggleGroup('building-meter')}
+                style={{ borderLeft: '4px solid #6366f1' }}>
+                <span className="hist-group-icon">🏢</span>
+                <span className="hist-group-label">Meter อาคาร</span>
+                <span className="hist-group-count">{weeks.length}</span>
+                <span className="hist-group-arrow">{openGroups.has('building-meter') ? '⌄' : '›'}</span>
+              </button>
+              {openGroups.has('building-meter') && weeks.map(w => (
+                <div key={w} className="hist-row">
+                  <div className="hist-info">
+                    <span className="hist-location">{w}</span>
+                    <span className="hist-date">สัปดาห์ {w.split('-W')[1]} · ปี {w.split('-W')[0]}</span>
+                  </div>
+                  <div className="hist-actions">
+                    <button className="btn-dl" onClick={() => { window.location.href = `/api/export-building-meter?week=${w}`; }}>
+                      ⬇︎ Excel
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -618,6 +661,18 @@ function HomePageInner() {
         .card--meter .card__title { color: #fff; font-size: 15px; }
         .card--meter .card__sub   { color: rgba(255,255,255,0.75); }
         .card--meter .card__arrow { color: rgba(255,255,255,0.7); margin-left: auto; }
+
+        /* Meter อาคาร — indigo */
+        .card--bmeter {
+          background: linear-gradient(135deg, #3730a3 0%, #6366f1 100%);
+          box-shadow: 0 6px 18px rgba(99,102,241,0.35);
+          min-height: 72px;
+          gap: 12px;
+        }
+        .card--bmeter .card__icon  { font-size: 26px; }
+        .card--bmeter .card__title { color: #fff; font-size: 15px; }
+        .card--bmeter .card__sub   { color: rgba(255,255,255,0.75); }
+        .card--bmeter .card__arrow { color: rgba(255,255,255,0.7); margin-left: auto; }
 
         /* History — dark */
         .card--history {
